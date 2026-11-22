@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {parseBackup} from '../dist/platform/backup.js';
+import {DEFAULT_SETTINGS} from '../dist/domain/organizer.js';
+const chat={id:'abcdef123',title:'Título',url:'https://chatgpt.com/c/abcdef123',source:'import',updatedAt:1700000000000,verifiedAt:true,importedAt:1700000000000,folderId:'folder',pinned:false,archived:false,protected:false,messages:[],editedAt:0};
+const backup=()=>({kind:'iapro-optimizer',version:1,exportedAt:'2026-11-22',chats:[{...chat}],folders:[{id:'folder',name:'Trabalho',color:'#aabbcc'}],prompts:[],settings:{...DEFAULT_SETTINGS}});
+test('valida backup íntegro',()=>{assert.equal(parseBackup(backup()).chats.length,1);});
+test('recusa backup alheio ao IAPro',()=>{assert.throws(()=>parseBackup({...backup(),kind:'other'}),/backup IAPro/);});
+test('recusa IDs repetidos',()=>{const b=backup();b.chats.push({...chat});assert.throws(()=>parseBackup(b),/conversa inválida/);});
+test('recusa links fora do ChatGPT',()=>{const b=backup();b.chats[0].url='https://example.com';assert.throws(()=>parseBackup(b),/conversa inválida/);});
+test('recusa referências a pastas ausentes',()=>{const b=backup();b.folders=[];assert.throws(()=>parseBackup(b),/pasta inexistente/);});
+test('recusa regra que aponta para pasta ausente',()=>{const b=backup();b.settings.rules=[{id:'r',keywords:['test'],folderId:'missing',enabled:true}];assert.throws(()=>parseBackup(b),/pastas ausentes/);});
