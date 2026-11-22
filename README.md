@@ -1,76 +1,185 @@
-# Chat Maestro
+<p align="center">
+  <img src="assets/icon128.png" alt="Ícone do Chat Maestro" width="104" height="104">
+</p>
 
-Extensão independente para Chrome Manifest V3 que reúne conversas do **ChatGPT** e **Gemini** numa biblioteca privada, com organização local, fila de mensagens e ferramentas de produtividade. Sem código de outras extensões, backend de cobrança ou telemetria.
+<h1 align="center">Chat Maestro</h1>
 
-**Versão 0.3.1** · TypeScript strict · IndexedDB · zero dependências de runtime · painel lateral único.
+<p align="center">
+  <strong>Suas conversas com IA merecem mais do que uma barra lateral.</strong>
+</p>
 
-## O que funciona
+<p align="center">
+  Organize seu histórico, encontre o que importa e prepare seus próximos prompts.<br>
+  Um espaço de trabalho leve para <strong>ChatGPT</strong> e <strong>Gemini</strong>, direto no Chrome.
+</p>
 
-| Funcionalidade | ChatGPT | Gemini |
-|---|---|---|
-| Salvar a conversa aberta (título e URL) | Sim | Sim |
-| Capturar links visíveis na barra lateral, por clique | Sim* | Sim* |
-| Buscar, favoritar, arquivar e proteger **localmente** | Sim | Sim |
-| Pastas, regras de classificação e organização local diária opt-in | Sim | Sim |
-| Selecionar até 100 e arquivar/restaurar/proteger/mover localmente | Sim | Sim |
-| Exportar seleção em JSON, Markdown ou TXT | Sim | Sim |
-| Biblioteca de prompts com variáveis e editor | Sim | Sim |
-| Estruturar prompts localmente, sem API de IA | Sim | Sim |
-| Inserir prompt na aba ativa sem enviar | Experimental* | Experimental* |
-| Importar mensagens da exportação `conversations.json` | Sim | Não |
-| Enfileirar, editar e ordenar mensagens por conversa | Sim | Sim |
-| Preparar próxima mensagem no compositor sem enviar | Experimental* | Experimental* |
-| Arquivar/apagar/sincronizar conversas diretamente na conta | Não | Não |
+<p align="center">
+  <a href="#comece-pelo-chrome">Começar</a> ·
+  <a href="#o-que-você-pode-fazer-hoje">Funcionalidades</a> ·
+  <a href="#para-onde-vamos">Próximos passos</a> ·
+  <a href="#construa-com-a-gente">Participar</a>
+</p>
 
-\* Recursos dependentes do DOM do site; a interface pode mudar. Quando a barra lateral não expõe links, **Salvar conversa aberta** é a alternativa. O campo de composição pode não ser encontrado em algumas interfaces; **Copiar prompt** continua disponível.
+<p align="center">
+  <img alt="Versão 0.3.1" src="https://img.shields.io/badge/vers%C3%A3o-0.3.1-222222">
+  <img alt="Chrome Manifest V3" src="https://img.shields.io/badge/Chrome-Manifest%20V3-246BCE">
+  <img alt="Local-first" src="https://img.shields.io/badge/dados-local--first-14866D">
+  <a href="https://github.com/IAPro-Community/chat-maestro/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/IAPro-Community/chat-maestro/actions/workflows/ci.yml/badge.svg"></a>
+</p>
 
-**Atenção:** arquivar na IAPro modifica apenas o IndexedDB da extensão. Nunca arquiva, exclui ou altera a conversa no ChatGPT ou Gemini. Conversas capturadas do DOM recebem **data de atividade desconhecida**, impedindo arquivamento automático baseado em antiguidade. Dados de mensagens do Gemini não são capturados pela extensão.
+> **Prévia para desenvolvimento · v0.3.1.** A base já inclui biblioteca, organização local e fila de mensagens. A integração visual com sessões autenticadas de ChatGPT e Gemini ainda precisa de homologação. Não há publicação na Chrome Web Store nesta fase.
 
-## Instalar
+## O problema não é conversar com IA. É encontrar a conversa depois.
 
-1. Descompacte o arquivo `chat-maestro-v0.3.1-instalar.zip` numa pasta fixa.
-2. Chrome → `chrome://extensions` → **Modo do desenvolvedor** → **Carregar sem compactação**.
-3. Selecione a pasta extraída que contém `manifest.json`.
-4. Clique no ícone da extensão para abrir o painel lateral.
-5. Abra `chatgpt.com` ou `gemini.google.com`, volte ao painel → **Dados** → **Salvar conversa aberta** ou **Capturar barra lateral**.
-6. Organize a biblioteca em **Biblioteca**, **Organizar** ou **Prompts**. Tudo permanece local.
+Você começa um chat para resolver uma dúvida. Em seguida, abre outro para trabalhar, outro para estudar, outro para testar uma ideia. Sem perceber, o histórico virou uma lista enorme de assuntos misturados.
 
-**Atualizando da IAPro v0.1:** substitua os arquivos **na mesma pasta** já carregada no Chrome e clique em **Recarregar** em `chrome://extensions` (não adicione como nova pasta/novo ID); `openDB` migra os registros antigos para incluir `provider: chatgpt`. Como alternativa, exporte um backup v1 antes, instale a nova extensão e restaure pela aba Dados. Backups v1 são convertidos para v2. Uma instalação com ID diferente não compartilha os dados da antiga.
+O Chat Maestro nasceu para resolver esse problema cotidiano: **dar uma casa para as conversas úteis, facilitar a limpeza do que perdeu relevância e tornar prompts recorrentes mais fáceis de usar** — sem pedir que você abandone seu assistente favorito.
 
-## Desenvolvimento
+| Quando tudo fica na barra lateral | Com o Chat Maestro |
+| --- | --- |
+| É difícil reencontrar uma conversa importante | Biblioteca com busca, filtros e favoritos |
+| Projetos e assuntos ficam misturados | Pastas e regras de organização |
+| Conversas antigas acumulam sem revisão | Sugestões de limpeza e arquivamento **local** com proteção |
+| Você reescreve o mesmo pedido toda semana | Templates de prompts com variáveis |
+| Vários prompts precisam ser enviados em sequência | Fila editável por conversa, com preparação e confirmação manual |
+| É difícil levar a organização para outra instalação | Exportação e backup da biblioteca |
 
-Node.js 22+, `npm install`, `npm test`, `npm run build`, `npm run package`.
+## O que você pode fazer hoje
+
+### 01 · Sua biblioteca, no seu ritmo
+
+Salve a conversa aberta, capture links **visíveis** da barra lateral sob demanda, favorite, mova para pastas e filtre por ChatGPT ou Gemini. Exporte uma seleção em **JSON, Markdown ou TXT**.
+
+A biblioteca é da extensão: ela **não reorganiza automaticamente a barra lateral da sua conta**.
+
+### 02 · Limpeza sem sustos
+
+Crie regras para separar assuntos e revisar conversas antigas. O organizador utiliza datas de atividade confiáveis, respeita itens protegidos e permite visualizar candidatos antes de aplicar mudanças. A rotina diária é opcional e começa desligada.
+
+**Arquivar aqui significa arquivar na biblioteca local.** Nenhuma conversa é apagada ou arquivada na conta ChatGPT ou Gemini.
+
+### 03 · Prompts que você realmente reutiliza
+
+Salve modelos com variáveis, edite-os e prepare o texto para copiar ou inserir no compositor da conversa aberta. A inserção depende da interface de cada plataforma e nunca dispara o envio por conta própria.
+
+### 04 · Ideias em fila, sem perder o controle
+
+Monte uma fila de até **30 mensagens por conversa**, reordene, edite e prepare a próxima no campo de entrada. O Maestro confere o destino e evita sobrescrever rascunhos existentes.
+
+O envio ainda é **manual**: depois de enviar, confirme a etapa no painel para liberar a próxima mensagem.
+
+### Onde funciona?
+
+| Capacidade | ChatGPT | Gemini |
+| --- | --- | --- |
+| Biblioteca por título e link | Disponível | Disponível |
+| Captura pontual da barra lateral | Dependente da interface | Dependente da interface |
+| Pastas, favoritos, busca e limpeza local | Disponível | Disponível |
+| Templates e fila de prompts | Disponível | Disponível |
+| Inserção no compositor | Experimental | Experimental |
+| Importação de mensagens do arquivo `conversations.json` | Parcial, somente texto | Ainda não disponível |
+| Arquivamento direto na conta | Não disponível | Não disponível |
+| Envio automático da fila | Não disponível | Não disponível |
+
+> Capturas de links não fornecem necessariamente a data real da última atividade. O Maestro não inventa essa informação para justificar uma limpeza automática.
+
+## Veja como o fluxo funciona
+
+```mermaid
+flowchart LR
+    A["ChatGPT ou Gemini"] -->|"Ação do usuário"| B["Painel Chat Maestro"]
+    B --> C["Biblioteca local"]
+    C --> D["Organizar e buscar"]
+    B --> E["Prompts e fila"]
+    C --> F["Backup e exportação"]
+```
+
+**Sem backend próprio, sem telemetria, sem login adicional.** Os dados ficam no armazenamento da extensão no seu navegador. Operações sobre a página exigem ação explícita; não há captura contínua de conversas em segundo plano.
+
+## Comece pelo Chrome
+
+A versão atual é distribuída **para instalação em modo desenvolvedor**. Ela ainda não está publicada na Chrome Web Store.
+
+**Requisitos:** Chrome 116+ e Node.js 22+ para gerar o pacote a partir do código.
+
+```bash
+git clone https://github.com/IAPro-Community/chat-maestro.git
+cd chat-maestro
+npm install
+npm run package
+```
+
+Isso executa o build e os testes e gera `release/chat-maestro-v0.3.1-instalar.zip`. Para instalar:
+
+1. Acesse `chrome://extensions` e ative **Modo do desenvolvedor**.
+2. Clique em **Carregar sem compactação** e selecione a pasta `dist/` gerada pelo build.
+3. Fixe o Chat Maestro na barra do Chrome e abra o painel lateral.
+4. Entre no ChatGPT ou Gemini e use **Dados → Salvar conversa aberta**.
+5. Experimente **Biblioteca**, **Organizar** e **Prompts**.
+
+Já usa uma versão anterior da IAPro Optimizer? **Faça um backup antes de atualizar.** Uma nova instalação com outro ID do Chrome não compartilha automaticamente o banco antigo. Veja as orientações de compatibilidade em [Arquitetura](docs/ARCHITECTURE.md) e os [cenários de homologação](docs/TESTES_MANUAIS.md).
+
+## Para onde vamos
+
+A ideia não é acrescentar dezenas de botões. É resolver melhor os poucos problemas que fazem diferença todo dia.
+
+| Etapa | Entrega que buscamos | Critério para considerar pronta |
+| --- | --- | --- |
+| **Agora · Base 0.3.1** | Biblioteca, pastas, prompts, fila manual e limpeza local | Build e testes automatizados; homologação de navegador ainda aberta |
+| **Próximo · Confiabilidade** | Testes reais em ChatGPT/Gemini, isolamento por conta, melhores diagnósticos | Nenhuma ação executada na conversa ou conta errada |
+| **Depois · Histórico em escala** | Busca indexada, paginação e importação mais robusta | Milhares de conversas sem travar a interface |
+| **Em estudo · Automação assistida** | Arquivamento na conta e envio sequencial opt-in | Evidência E2E, confirmação de cada ação, pausa e recuperação segura |
+
+O avanço é guiado por **problemas observados, testes reproduzíveis e compatibilidade**. Se uma automação não puder confirmar o que fez, ela não será anunciada como pronta.
+
+Acompanhe o [roadmap detalhado](docs/ROADMAP.md), o [histórico de versões](CHANGELOG.md) e a [pesquisa de funcionalidades](docs/PESQUISA_FUNCIONALIDADES.md).
+
+## Pequeno por escolha. Preparado para crescer.
+
+O Chat Maestro é um projeto **Chrome Manifest V3, TypeScript strict e IndexedDB**, com uma interface de painel lateral e sem dependências de runtime. Regras de negócio, persistência, integração com a página e telas têm responsabilidades separadas.
 
 ```text
 src/
-  domain/              # entidades; parsers de URLs por provedor; organizador; exportador; prompts
-  platform/            # persistência IndexedDB; backup; captura opt-in; injeção opt-in no composer
-  ui/screens/          # Biblioteca / Organizar / Prompts / Dados
-  worker.ts            # eventos de instalação e rotina local diária (chrome.alarms)
-tests/                 # contratos, importação, organização, segurança e migração
-scripts/               # build verificável e ZIP sem dependências de runtime
-docs/                  # arquitetura, concorrentes e checklist de homologação
+  domain/       Regras, modelos, importação e organização
+  platform/     IndexedDB, backups e integração opt-in
+  ui/           Biblioteca, Organizar, Prompts e Dados
+  worker.ts     Eventos e agendamento local opcional
+tests/          Contratos e regressão
+docs/           Decisões, pesquisa, roadmap e homologação
 ```
 
-O build Chrome MV3 não utiliza `host_permissions` nem content scripts persistentes. O código de página só roda após ação explícita do usuário com `activeTab` e `scripting`. Não usa endpoints privados, tokens, cookies, código remoto, eval nem chamadas para desbloquear funcionalidades pagas de terceiros. Não tem vínculo com OpenAI ou Google.
+**Princípio de produto:** uma funcionalidade só entra no núcleo se for útil, segura, testável e sustentável. Não é necessário um servidor, um framework novo ou uma assinatura para cada melhoria.
 
-## Fila de mensagens (v0.3)
+Para trabalhar no código:
 
-Na aba **Prompts → Fila de mensagens**, selecione uma conversa aberta do ChatGPT ou Gemini, enfileire até 30 textos, reordene-os e use **Preparar próxima na aba ativa**. A extensão apenas preenche o campo quando ele está vazio, após conferir o destino. **O envio é manual:** depois de enviar, clique em **Confirmar que enviei** para liberar a próxima. Não existe execução automática ou agendamento de prompts nesta versão. O backup v3 preserva a fila; backups v1/v2 continuam aceitos.
+```bash
+npm run typecheck
+npm test
+npm run build
+```
 
-Na aba **Organizar**, exporte em JSON as conversas sugeridas antes de aplicar a limpeza local. Dentro do painel, **Ctrl/Cmd+K** abre a busca na Biblioteca.
+Consulte a [arquitetura](docs/ARCHITECTURE.md), as [regras de engenharia](AGENTS.md) e o [checklist de testes manuais](docs/TESTES_MANUAIS.md). **Testes automatizados não substituem a validação no Chrome autenticado.**
 
-## Privacidade e confiabilidade
+## Privacidade não é recurso premium
 
-- Dados de conversas são guardados em IndexedDB da extensão e configurações em `chrome.storage.local`, restrito a contextos confiáveis.
-- Importações são explícitas, limitado a 50 MB por JSON, e backups contêm texto em claro: cuide do arquivo exportado.
-- O importador do ChatGPT processa somente o ramo textual atual; não extrai mídia e outros ramos. O export do Google Takeout não é interpretado como `conversations.json` do ChatGPT.
-- A automação diária é desligada por padrão, nunca modifica as contas e somente atua em dados com data de atualização comprovada.
-- Seleção em lote exige confirmação para mudanças; exportação não envia informação a serviço externo.
-- 61 testes automatizados passaram; **instalação e uso em Chrome autenticado ainda exigem homologação manual**. Não afirmar que os seletores DOM foram validados em produção.
+- **Seus dados ficam locais.** Conversas importadas, pastas e filas são armazenadas no navegador.
+- **Sem telemetria ou backend da extensão.** Não é necessário criar conta no Chat Maestro.
+- **Sem ações silenciosas.** Acesso à página ocorre sob demanda; envio de prompts e alterações nas contas não são automáticos.
+- **Sem promessas enganosas.** O Maestro não desbloqueia assinaturas de ChatGPT, Gemini ou de outras extensões.
 
-Documentos: [fila](docs/QUEUE_DESIGN.md) · [pesquisa de recursos](docs/PESQUISA_FUNCIONALIDADES.md) · [arquitetura](docs/ARCHITECTURE.md) · [referências e seleção](docs/REFERENCIAS_PREMIUM.md) · [roteiro](docs/ROADMAP.md) · [homologação](docs/TESTES_MANUAIS.md).
+**Atenção aos backups:** os arquivos exportados podem conter o conteúdo das suas conversas em texto claro. Guarde-os com o mesmo cuidado que qualquer documento confidencial.
 
-## Identidade e compatibilidade
+## Construa com a gente
 
-O produto foi renomeado para **Chat Maestro** na versão 0.3.1. Para não perder os dados dos usuários atuais, o banco IndexedDB `iapro-optimizer-v1` e o identificador de backup `iapro-optimizer` permanecem como identificadores internos de migração. Não representam integração ou dependência do código antigo. O nome público do repositório é `IAPro-Community/chat-maestro`.
+O Chat Maestro é desenvolvido pela **[IAPro Community](https://github.com/IAPro-Community)**. Este repositório é também um convite para acompanhar a evolução de uma ferramenta real: o que já funciona, o que está em teste e o que ainda precisa ser resolvido.
+
+Encontrou um comportamento estranho? [Abra uma issue](https://github.com/IAPro-Community/chat-maestro/issues) com navegador, plataforma, passos para reproduzir e resultado esperado. Tem uma ideia para melhorar o dia a dia? Conte **qual problema ela resolve** antes de propor mais uma tela ou configuração.
+
+Para contribuições no código, leia o [AGENTS.md](AGENTS.md) e rode os testes antes de enviar seu pull request. Antes de ampliar a redistribuição externa, o projeto ainda precisa definir uma licença explícita; código público não significa, por si só, licença open-source.
+
+---
+
+<p align="center">
+  <strong>Menos tempo procurando. Mais tempo aproveitando o que você já conversou.</strong><br>
+  <sub>Chat Maestro · Um projeto da IAPro Community · Não afiliado à OpenAI ou ao Google.</sub>
+</p>
