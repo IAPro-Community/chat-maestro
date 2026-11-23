@@ -19,6 +19,15 @@ jobs:
           name: chat-maestro-instalar
           path: dist/
           if-no-files-found: error
+      - name: Arquivar código-fonte correspondente ao build
+        run: |
+          tar --exclude=.git --exclude=node_modules --exclude=dist --exclude=release -czf chat-maestro-source.tar.gz .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chat-maestro-source
+          path: chat-maestro-source.tar.gz
+          if-no-files-found: error
+          retention-days: 3
 
   publish-preview:
     name: Publicar ZIP de prévia
