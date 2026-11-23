@@ -1,6 +1,6 @@
 {
   "name": "chat-maestro",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "private": true,
   "type": "module",
   "description": "Chat Maestro: extensão MV3 leve para organização, prompts e filas no ChatGPT e Gemini.",

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.2 — Novo ícone da extensão (2026-11-22)
+
+- Substituídos os ícones Chrome 16/32/48/128 px pela nova identidade visual Chat Maestro.
+- O README agora exibe o novo ícone diretamente de `assets/icon128.png`.
+- Nenhuma mudança no comportamento, permissões ou esquema dos dados.
+- Imagens conceituais produzidas anteriormente não são screenshots reais e não foram adicionadas ao README como evidência de execução.
+
 ## Não lançado — Identidade visual do Chat Maestro
 
 - Novo símbolo do maestro com batuta e movimento de regência, reconstruído em SVG.
