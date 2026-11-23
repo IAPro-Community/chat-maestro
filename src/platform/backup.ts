@@ -41,8 +41,8 @@ export function parseBackup(raw:unknown):Backup{
   if(settings.rules.some(r=>!folders.has(r.folderId)))throw Error('Regras referenciam pastas ausentes.');
   // Backups v1/v2 continuam importáveis. A fila só existe em backups v3.
   const chats=(raw.chats as Chat[]).map(c=>({...c,provider:parseConversationUrl(c.url)!.provider}));
-  if(Number(raw.version)===3 && !Array.isArray(raw.queue))throw Error('Backup v3 sem fila de mensagens.');
-  const queueRaw=Number(raw.version)===3?raw.queue as unknown[]:[];
+  if(Number(raw.version)>=3 && !Array.isArray(raw.queue))throw Error('Backup v3 sem fila de mensagens.');
+  const queueRaw=Number(raw.version)>=3?raw.queue as unknown[]:[];
   if(queueRaw.length>MAX_QUEUE_TOTAL)throw Error('Fila excede o limite de 300 mensagens.');
   const queue:QueuedMessage[]=queueRaw.map(normalizeQueuedMessage);
   const distinct=new Set(queue.map(m=>m.id));
