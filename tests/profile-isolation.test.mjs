@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import 'fake-indexeddb/auto';
 import {dbNameForScope,LEGACY_SCOPE,createProfile,listProfiles,selectProfile,activeScope,requireSelectedProfile} from '../dist/platform/profiles.js';
-import {importChats,all,copyLegacyToProfile,modifyChat,one} from '../dist/platform/db.js';
+import {importChats,all,copyLegacyToProfile,modifyChat,one,put} from '../dist/platform/db.js';
 import {parseManualConversation} from '../dist/domain/importer.js';
 import {makeBackup,restoreBackup} from '../dist/platform/backup.js';
 
