@@ -3,7 +3,7 @@ import type {QueuedMessage} from '../domain/queue.js';
 import {applyToChat, MAX_BATCH} from '../domain/organizer.js';
 import {mergeChat} from '../domain/importer.js';
 import {parseConversationUrl} from '../domain/providers.js';
-import {activeScope,dbNameForScope} from './profiles.js';
+import {activeScope,dbNameForScope,LEGACY_SCOPE,requireProfile} from './profiles.js';
 type StoreName = 'chats' | 'folders' | 'prompts' | 'meta' | 'queue';
 const opening=new Map<string,Promise<IDBDatabase>>();
 export function openDB(scopeId:string=activeScope()):Promise<IDBDatabase>{
@@ -56,6 +56,10 @@ export async function one<T>(name:StoreName,id:string,scopeId:string=activeScope
   const db=await openDB(scopeId);return requestValue<T|undefined>(db.transaction(name,'readonly').objectStore(name).get(id));
 }
 export async function put<T extends {id:string}>(name:StoreName,item:T):Promise<void>{
+  if(name==='chats'&&activeScope()!==LEGACY_SCOPE){
+    const p=await requireProfile(activeScope());
+    if((item as unknown as Chat).provider!==p.provider)throw Error('Conversa pertence a outro provedor; selecione o perfil correto.');
+  }
   const db=await openDB();const tx=db.transaction(name,'readwrite');const done=txDone(tx);tx.objectStore(name).put(item);await done;
 }
 export async function remove(name:StoreName,id:string):Promise<void>{
@@ -63,6 +67,10 @@ export async function remove(name:StoreName,id:string):Promise<void>{
 }
 export async function importChats(rows:Chat[],onProgress?:(n:number)=>void,scopeId:string=activeScope()):Promise<number>{
   if(rows.length>100_000)throw Error('Importação muito grande.');
+  if(scopeId!==LEGACY_SCOPE){
+    const p=await requireProfile(scopeId);
+    if(rows.some(row=>row.provider!==p.provider))throw Error('Importação contém outro provedor; selecione o perfil local correto.');
+  }
   let count=0;
   // Lotes pequenos evitam transações longas. Organização existente tem precedência.
   const db=await openDB(scopeId);
@@ -168,6 +176,10 @@ export async function undoLast():Promise<number>{
   return total;
 }
 export async function replaceAll(chats:Chat[],folders:Folder[],prompts:Prompt[],queue:QueuedMessage[]=[],scopeId:string=activeScope()):Promise<void>{
+  if(scopeId!==LEGACY_SCOPE){
+    const p=await requireProfile(scopeId);
+    if(chats.some(c=>c.provider!==p.provider)||queue.some(q=>q.provider!==p.provider))throw Error('Não é permitido misturar provedores no perfil local.');
+  }
   const db=await openDB(scopeId);const tx=db.transaction(['chats','folders','prompts','meta','queue'],'readwrite');const done=txDone(tx);
   const cs=tx.objectStore('chats'),fs=tx.objectStore('folders'),ps=tx.objectStore('prompts');
   cs.clear();fs.clear();ps.clear();tx.objectStore('meta').clear();tx.objectStore('queue').clear();
@@ -185,7 +197,8 @@ export function planItemIds(plan:Plan):string[]{return plan.recommendations.map(
 
 /** Cópia não destrutiva dos registros legados. Exige banco de destino vazio. */
 export async function copyLegacyToProfile(scopeId:string,provider:'chatgpt'|'gemini'):Promise<{chats:number;folders:number;prompts:number;queue:number}>{
-  if(scopeId==='legacy')throw Error('Escolha um perfil de destino.');
+  if(scopeId===LEGACY_SCOPE)throw Error('Escolha um perfil de destino.');
+  await requireProfile(scopeId,provider);
   const [existingChats,existingFolders,existingPrompts,existingQueue]=await Promise.all([
     all<Chat>('chats',scopeId),all<Folder>('folders',scopeId),all<Prompt>('prompts',scopeId),all<QueuedMessage>('queue',scopeId)
   ]);

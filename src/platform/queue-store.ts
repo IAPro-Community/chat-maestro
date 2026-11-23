@@ -1,5 +1,7 @@
 import {newQueueMessage,normalizeQueuedMessage,queueForConversation,reorderConversation,type QueuedMessage} from '../domain/queue.js';
 import {openDB} from './db.js';
+import {parseConversationUrl} from '../domain/providers.js';
+import {requireSelectedProfile} from './profiles.js';
 
 function requestResult<T>(r:IDBRequest<T>):Promise<T>{return new Promise((resolve,reject)=>{r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error??Error('Falha ao ler fila'));});}
 function done(tx:IDBTransaction):Promise<void>{return new Promise((resolve,reject)=>{tx.oncomplete=()=>resolve();tx.onabort=()=>reject(tx.error??Error('Transação cancelada'));tx.onerror=()=>reject(tx.error??Error('Falha ao gravar fila'));});}
@@ -26,7 +28,10 @@ async function withQueue<T>(change:(rows:QueuedMessage[])=>{next:QueuedMessage[]
   };
   try{await completion;}catch(err){throw failure??err;}return result;
 }
-export function addQueuedMessage(url:string,body:string):Promise<QueuedMessage>{
+export async function addQueuedMessage(url:string,body:string):Promise<QueuedMessage>{
+  const ref=parseConversationUrl(url);
+  if(!ref)throw Error('Informe a URL de uma conversa válida.');
+  await requireSelectedProfile(ref.provider);
   return withQueue(rows=>{const entry=newQueueMessage(url,body,rows,crypto.randomUUID());return {next:[...rows,entry],result:entry};});
 }
 export function updateQueuedMessage(id:string,body:string):Promise<void>{
@@ -39,7 +44,10 @@ export function updateQueuedMessage(id:string,body:string):Promise<void>{
 export function deleteQueuedMessage(id:string):Promise<void>{
   return withQueue(rows=>{if(!rows.some(x=>x.id===id))throw Error('Mensagem não encontrada.');return {next:rows.filter(x=>x.id!==id),result:undefined};});
 }
-export function moveQueuedMessage(url:string,id:string,direction:'up'|'down'):Promise<void>{
+export async function moveQueuedMessage(url:string,id:string,direction:'up'|'down'):Promise<void>{
+  const ref=parseConversationUrl(url);
+  if(!ref)throw Error('Conversa inválida.');
+  await requireSelectedProfile(ref.provider);
   return withQueue(rows=>{
     const ordered=reorderConversation(rows,url,id,direction);
     const changes=new Map(ordered.map(x=>[x.id,x]));
