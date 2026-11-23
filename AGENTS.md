@@ -38,3 +38,7 @@ Extensão independente de Chrome para ChatGPT e Gemini. Mantenha produto leve e 
 - Não ampliar as origens opcionais ou acrescentar permissions tabs sem ADR, revisão de privacidade e testes.
 - Permissão por domínio não significa autorização para sincronização silenciosa; captura e inserção continuam sob gesto do usuário.
 - Mensagens de erro devem diferenciar ausência de autorização, URL oculta, provedor diferente, conversa inicial e seletor DOM alterado.
+
+## Duas superfícies, uma aplicação
+- `panel.html` e `manager.html` carregam `ui/app.js`; nunca bifurcar domínio, IndexedDB ou lógica de ações para a tela cheia.
+- A árvore de pastas e o grid são uma apresentação responsiva apenas na biblioteca ampliada. Não expor tags, anexos ou notas como filtros sem fonte de dados e testes.

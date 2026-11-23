@@ -127,7 +127,7 @@ O build local gera `release/chat-maestro-v<versao>-instalar.zip`. Para usuários
 
 A navegação permanece visível durante a rolagem; a **Biblioteca** agora mostra conexão por provedor, captura direta e ações de seleção contextual; **Prompts** dá prioridade aos modelos reutilizáveis e mantém fila/editor recolhidos; **Organizar** inicia pela prévia, deixando configurações detalhadas por demanda.
 
-A v0.4.1 remove a dependência de `activeTab` temporário para operar dentro do painel lateral, substituída por permissão opcional e explícita por provedor. **Ainda não é homologação do Chrome autenticado.** Arquivamento continua exclusivamente local e o envio da fila é manual. [Confira a comparação com a extensão original, os limites e os critérios de aceite](docs/UX_REBUILD.md). Imagens de interface geradas anteriormente são conceitos, **não capturas reais** do produto.
+A v0.4.1 remove a dependência de `activeTab` temporário para operar dentro do painel lateral, substituída por permissão opcional e explícita por provedor. Para organizar em uma área maior, a **Biblioteca** oferece **Abrir gerenciador em tela cheia**, usando os mesmos dados locais — sem duplicar a aplicação. **Ainda não é homologação do Chrome autenticado.** Arquivamento continua exclusivamente local e o envio da fila é manual. [Confira a comparação com a extensão original, os limites e os critérios de aceite](docs/UX_REBUILD.md). Imagens de interface geradas anteriormente são conceitos, **não capturas reais** do produto.
 
 ## Para onde vamos
 

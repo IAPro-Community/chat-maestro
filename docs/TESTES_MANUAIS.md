@@ -41,3 +41,10 @@ Marque cada caso antes da publicação. **Os testes automatizados não substitue
 - [ ] Abrir página inicial sem ID de conversa e confirmar que não salva um ID inventado.
 - [ ] Testar o editor de prompts e fila com rascunho presente; nenhuma mensagem deve ser enviada automaticamente.
 - [ ] Conferir interface em 320, 400 e 520 px, nos temas claro e escuro; screenshots somente do navegador real.
+
+## P0 — Biblioteca ampliada
+
+- [ ] Na Biblioteca lateral, clicar Abrir gerenciador em tela cheia. Confirmar nova aba `manager.html` sem mudar de banco, conversa ou extensão.
+- [ ] A 320px, a Biblioteca continua em lista; na janela larga mostra coleções/pastas à esquerda e cartões ao centro.
+- [ ] Selecionar Ativas, Todas, Favoritas, Arquivadas e pasta existente; conferir filtros, contador e busca.
+- [ ] Testar tema claro/escuro, teclado, rolagem, 100 resultados e operações em lote sem perda de dados.

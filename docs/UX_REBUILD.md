@@ -51,3 +51,9 @@ A captura enviada do painel em Dados revelou falha de identificação de aba mes
 A UI também elimina parte do cabeçalho duplicado, compacta o painel e exibe estado de conexão dentro da Biblioteca. Estas mudanças ainda **não** constituem paridade visual nem funcional com a extensão original.
 
 Gate de homologação: autorização negada/aceita/revogada, captura em navegação SPA, abertura/fechamento do painel, dados locais intactos, dois provedores isolados, Chrome/Edge real, sem envio automático nem arquivo remoto.
+
+## Biblioteca de desktop sem duplicar aplicação
+
+O painel lateral é adequado a busca e ações rápidas, não a replicar o grid e a árvore de pastas do Conversation Manager da referência 8.5.7. A extensão inclui manager.html como outra superfície da mesma UI/IndexedDB, acessível pelo botão Abrir gerenciador em tela cheia.
+
+Somente a Biblioteca alterna para layout amplo: árvore de coleções/pastas e cartões responsivos. Os quatro módulos, domínio, persistência, backups e controles de segurança continuam compartilhados. Não implementar serviços paralelos nem duplicar regras de negócio. A tela cheia só mostra filtros e metadados realmente suportados pelo banco.

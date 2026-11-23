@@ -160,6 +160,7 @@ export function renderLibrary(ctx:Context):HTMLElement{
     button.classList.toggle('selected',filter===target && folderFilter===targetFolder);
     rail.append(button);
   };
+  collection('Ativas','active','all',ctx.chats.filter(c=>!c.archived).length);
   collection('Todas as conversas','all','all',ctx.chats.length);
   collection('Favoritas','pinned','all',ctx.chats.filter(c=>c.pinned).length);
   collection('Arquivadas','archived','all',ctx.chats.filter(c=>c.archived).length);
