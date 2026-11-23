@@ -1,7 +1,7 @@
 import type {Context} from '../context.js';
 import {captureCurrentSidebar,captureOpenConversation} from '../../platform/capture.js';
 import {hasSiteAccess,requestSiteAccess} from '../../platform/site-access.js';
-import {PROVIDER_LABEL,type AIProvider} from '../../domain/providers.js';
+import {PROVIDER_LABEL} from '../../domain/providers.js';
 import {importChats,clearAll} from '../../platform/db.js';
 import {parseExport} from '../../domain/importer.js';
 import {downloadJson,makeBackup,parseBackup,restoreBackup} from '../../platform/backup.js';
