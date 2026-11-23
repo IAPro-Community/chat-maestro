@@ -1,4 +1,4 @@
-# Arquitetura — Chat Maestro 0.2.0
+# Arquitetura — Chat Maestro 0.4.1
 
 **Chrome-first, Manifest V3 e monólito modular.** Nenhum framework visual ou backend é exigido para este escopo. A UI não conhece detalhes da implementação do IndexedDB além dos casos de uso que importa.
 
@@ -8,15 +8,16 @@
 - `src/domain/exporter.ts`: exportação JSON, Markdown e TXT sem I/O, para teste isolado.
 - `src/domain/prompt-coach.ts`: estruturação determinística de prompts. Não diz ser LLM.
 - `src/platform/db.ts`: IndexedDB com transações e migração v1→v2 in-place. Preserva o nome do banco para não perder dados.
-- `src/platform/capture.ts`: captura pontual pela API `chrome.scripting` usando `activeTab`; leitura de links e títulos, não cookies, armazenamento da página ou mensagens.
+- `src/platform/site-access.ts`: autorização opcional explícita e diagnóstico de acesso por provedor; usa a aba na janela em foco, sem depender de `activeTab`.
+- `src/platform/capture.ts`: captura pontual por `chrome.scripting` após autorização e gesto explícito; leitura de links e títulos, sem cookies, armazenamento da página ou mensagens.
 - `src/platform/composer.ts`: inserção **manual** no campo da aba ativa, isolada da lógica de envio. Se não encontrar editor, falha sem transmitir.
-- `src/platform/backup.ts`: backup v2 com provedor explícito, leitura de v1 e validação de URLs e referências.
+- `src/platform/backup.ts`: backups versionados com validação de URLs, referências e compatibilidade com versões anteriores.
 - `src/ui/screens/`: quatro seções, sem duplicação entre provedores.
 - `src/worker.ts`: rotina de organização local opcional via alarms. Worker não é servidor e não deve manter estado global para execução duradoura.
 
 ## Fronteiras de confiança
 
-1. `chatgpt.com` e `gemini.google.com` são **páginas não confiáveis**. O código injetado somente lê links/títulos ou insere texto após ação do usuário.
+1. `chatgpt.com`, `chat.openai.com` e `gemini.google.com` são **páginas não confiáveis**. O acesso ao domínio é autorizado uma vez pelo usuário e pode permanecer concedido até revogação; o código injetado só lê links/títulos ou insere texto após ação explícita, sem capturas permanentes.
 2. URLs entram no domínio via `parseConversationUrl`, permitindo apenas HTTPS, host exato, rotas `/c/:id` e `/app/:id`, sem query/string de rastreio persistida.
 3. Nenhuma API privada ou endpoint não documentado é usada. Arquivamento real na conta não está implementado.
 4. Backups são **dados externos**, validados antes de substituir o banco; configurações de automação retornam desligadas após restauração.

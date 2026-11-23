@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.1 — Correção do acesso às abas pelo painel (2026-11-23)
+
+- `activeTab` não é mais tratado como permissão confiável em cliques internos do painel lateral.
+- Acesso opcional e explícito por provedor, com controles em Biblioteca e Dados.
+- Erros distinguem página errada, URL protegida, falta de permissão e ausência de conversa específica.
+- Cabeçalho e cartões mais compactos; conexão visível na Biblioteca.
+- Testes de contrato de permissões adicionados. Ainda precisa homologar em Chrome/Edge autenticado.
+
+
 ## 0.4.0 — Navegação e fila contextual (2026-11-22)
 
 - Layout compacto com navegação persistente e suporte ao tema escuro do navegador.

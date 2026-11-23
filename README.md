@@ -21,13 +21,13 @@
 </p>
 
 <p align="center">
-  <img alt="Versão 0.4.0" src="https://img.shields.io/badge/vers%C3%A3o-0.4.0-222222">
+  <img alt="Versão 0.4.1" src="https://img.shields.io/badge/vers%C3%A3o-0.4.1-222222">
   <img alt="Chrome Manifest V3" src="https://img.shields.io/badge/Chrome-Manifest%20V3-246BCE">
   <img alt="Local-first" src="https://img.shields.io/badge/dados-local--first-14866D">
   <a href="https://github.com/IAPro-Community/chat-maestro/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/IAPro-Community/chat-maestro/actions/workflows/ci.yml/badge.svg"></a>
 </p>
 
-> **Prévia para desenvolvimento · v0.4.0.** A base já inclui biblioteca, organização local e fila de mensagens. A integração visual com sessões autenticadas de ChatGPT e Gemini ainda precisa de homologação. Não há publicação na Chrome Web Store nesta fase.
+> **Prévia para desenvolvimento · v0.4.1.** A base já inclui biblioteca, organização local e fila de mensagens. A integração visual com sessões autenticadas de ChatGPT e Gemini ainda precisa de homologação. Não há publicação na Chrome Web Store nesta fase.
 
 ## O problema não é conversar com IA. É encontrar a conversa depois.
 
@@ -106,6 +106,7 @@ Sem GitHub Actions, sem criar conta no GitHub e sem instalar Node.js. O botão a
 2. No Chrome, abra `chrome://extensions` e ative **Modo do desenvolvedor**.
 3. Clique em **Carregar sem compactação** e selecione a pasta que contém `manifest.json`.
 4. Fixe o ícone **Chat Maestro** no menu de extensões e abra o painel lateral.
+5. Em **Biblioteca**, clique em **ChatGPT · conectar** ou **Gemini · conectar**, conforme a plataforma. Autorize o acesso aos domínios solicitados pelo Chrome antes de capturar conversas.
 
 > **Prévia:** a versão atual é destinada a testes; a integração visual com sessões autenticadas de ChatGPT e Gemini ainda está em homologação. O download não é uma instalação pela Chrome Web Store. **O ZIP deve ser extraído** antes de carregar a extensão.
 
@@ -122,11 +123,11 @@ npm run package
 
 O build local gera `release/chat-maestro-v<versao>-instalar.zip`. Para usuários finais, use o **download direto** acima.
 
-### Interface revisada na v0.4.0
+### Interface revisada na v0.4.1
 
-A navegação permanece visível durante a rolagem; a **Biblioteca** traz captura direta e ações de seleção contextual; **Prompts** dá prioridade aos modelos reutilizáveis e mantém fila/editor recolhidos; **Organizar** inicia pela prévia, deixando configurações detalhadas por demanda.
+A navegação permanece visível durante a rolagem; a **Biblioteca** agora mostra conexão por provedor, captura direta e ações de seleção contextual; **Prompts** dá prioridade aos modelos reutilizáveis e mantém fila/editor recolhidos; **Organizar** inicia pela prévia, deixando configurações detalhadas por demanda.
 
-**Ainda não é homologação do Chrome autenticado.** Arquivamento continua exclusivamente local e o envio da fila é manual. [Confira a comparação com a extensão original, os limites e os critérios de aceite](docs/UX_REBUILD.md). Imagens de interface geradas anteriormente são conceitos, **não capturas reais** do produto.
+A v0.4.1 remove a dependência de `activeTab` temporário para operar dentro do painel lateral, substituída por permissão opcional e explícita por provedor. **Ainda não é homologação do Chrome autenticado.** Arquivamento continua exclusivamente local e o envio da fila é manual. [Confira a comparação com a extensão original, os limites e os critérios de aceite](docs/UX_REBUILD.md). Imagens de interface geradas anteriormente são conceitos, **não capturas reais** do produto.
 
 ## Para onde vamos
 
@@ -134,7 +135,7 @@ A ideia não é acrescentar dezenas de botões. É resolver melhor os poucos pro
 
 | Etapa | Entrega que buscamos | Critério para considerar pronta |
 | --- | --- | --- |
-| **Agora · Base 0.4.0** | Biblioteca, pastas, prompts, fila manual e limpeza local | Build e testes automatizados; homologação de navegador ainda aberta |
+| **Agora · Base 0.4.1** | Biblioteca, pastas, prompts, fila manual e limpeza local | Build e testes automatizados; homologação de navegador ainda aberta |
 | **Próximo · Confiabilidade** | Testes reais em ChatGPT/Gemini, isolamento por conta, melhores diagnósticos | Nenhuma ação executada na conversa ou conta errada |
 | **Depois · Histórico em escala** | Busca indexada, paginação e importação mais robusta | Milhares de conversas sem travar a interface |
 | **Em estudo · Automação assistida** | Arquivamento na conta e envio sequencial opt-in | Evidência E2E, confirmação de cada ação, pausa e recuperação segura |
