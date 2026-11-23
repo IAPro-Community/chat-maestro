@@ -4,6 +4,7 @@ import {renderLibrary} from './screens/library.js';
 import {renderOrganize} from './screens/organize.js';
 import {renderPrompts} from './screens/prompts.js';
 import {renderData} from './screens/data.js';
+import {initializeProfile} from '../platform/profiles.js';
 
 type Tab='library'|'organize'|'prompts'|'data';
 if(window.location.pathname.endsWith('/manager.html'))document.documentElement.classList.add('manager-view');
@@ -74,4 +75,4 @@ document.addEventListener('keydown',event=>{
     else{tab='library';void refresh().then(()=>document.getElementById('iapro-search')?.focus());}
   }
 });
-void refresh().catch(err=>notify(String(err),true));
+void initializeProfile().then(()=>refresh()).catch(err=>{console.error(err);notify(String(err),true);});

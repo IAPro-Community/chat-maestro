@@ -3,12 +3,15 @@ import type {QueuedMessage} from '../domain/queue.js';
 import {applyToChat, MAX_BATCH} from '../domain/organizer.js';
 import {mergeChat} from '../domain/importer.js';
 import {parseConversationUrl} from '../domain/providers.js';
+import {activeScope,dbNameForScope} from './profiles.js';
 type StoreName = 'chats' | 'folders' | 'prompts' | 'meta' | 'queue';
-let opening:Promise<IDBDatabase>|undefined;
-export function openDB():Promise<IDBDatabase>{
-  if (opening) return opening;
-  opening=new Promise<IDBDatabase>((resolve,reject)=>{
-    const request=indexedDB.open('iapro-optimizer-v1',3);
+const opening=new Map<string,Promise<IDBDatabase>>();
+export function openDB(scopeId:string=activeScope()):Promise<IDBDatabase>{
+  const dbName=dbNameForScope(scopeId);
+  const existing=opening.get(dbName);
+  if(existing)return existing;
+  const task=new Promise<IDBDatabase>((resolve,reject)=>{
+    const request=indexedDB.open(dbName,3);
     request.onupgradeneeded=(ev)=>{
       const db=request.result;
       if(!db.objectStoreNames.contains('chats')){const s=db.createObjectStore('chats',{keyPath:'id'});s.createIndex('byUpdate','updatedAt');}
@@ -33,11 +36,12 @@ export function openDB():Promise<IDBDatabase>{
     request.onerror=()=>reject(request.error ?? Error('Erro abrindo IndexedDB'));
     request.onsuccess=()=>{
       const db=request.result;
-      db.onversionchange=()=>{db.close();opening=undefined;};
+      db.onversionchange=()=>{db.close();opening.delete(dbName);};
       resolve(db);
     };
-  }).catch(err=>{opening=undefined;throw err;});
-  return opening!;
+  }).catch(err=>{opening.delete(dbName);throw err;});
+  opening.set(dbName,task);
+  return task;
 }
 function requestValue<T>(req:IDBRequest<T>):Promise<T>{
   return new Promise((resolve,reject)=>{req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error ?? Error('Falha no IndexedDB'));});
@@ -45,11 +49,11 @@ function requestValue<T>(req:IDBRequest<T>):Promise<T>{
 function txDone(tx:IDBTransaction):Promise<void>{
   return new Promise((resolve,reject)=>{tx.oncomplete=()=>resolve();tx.onabort=()=>reject(tx.error ?? Error('Transação cancelada'));tx.onerror=()=>reject(tx.error ?? Error('Erro na transação'));});
 }
-export async function all<T>(name:StoreName):Promise<T[]>{
-  const db=await openDB();return requestValue<T[]>(db.transaction(name,'readonly').objectStore(name).getAll());
+export async function all<T>(name:StoreName,scopeId:string=activeScope()):Promise<T[]>{
+  const db=await openDB(scopeId);return requestValue<T[]>(db.transaction(name,'readonly').objectStore(name).getAll());
 }
-export async function one<T>(name:StoreName,id:string):Promise<T|undefined>{
-  const db=await openDB();return requestValue<T|undefined>(db.transaction(name,'readonly').objectStore(name).get(id));
+export async function one<T>(name:StoreName,id:string,scopeId:string=activeScope()):Promise<T|undefined>{
+  const db=await openDB(scopeId);return requestValue<T|undefined>(db.transaction(name,'readonly').objectStore(name).get(id));
 }
 export async function put<T extends {id:string}>(name:StoreName,item:T):Promise<void>{
   const db=await openDB();const tx=db.transaction(name,'readwrite');const done=txDone(tx);tx.objectStore(name).put(item);await done;
@@ -57,11 +61,11 @@ export async function put<T extends {id:string}>(name:StoreName,item:T):Promise<
 export async function remove(name:StoreName,id:string):Promise<void>{
   const db=await openDB();const tx=db.transaction(name,'readwrite');const done=txDone(tx);tx.objectStore(name).delete(id);await done;
 }
-export async function importChats(rows:Chat[],onProgress?:(n:number)=>void):Promise<number>{
+export async function importChats(rows:Chat[],onProgress?:(n:number)=>void,scopeId:string=activeScope()):Promise<number>{
   if(rows.length>100_000)throw Error('Importação muito grande.');
   let count=0;
   // Lotes pequenos evitam transações longas. Organização existente tem precedência.
-  const db=await openDB();
+  const db=await openDB(scopeId);
   for(let start=0;start<rows.length;start+=100){
     const batch=rows.slice(start,start+100);
     const tx=db.transaction('chats','readwrite');const done=txDone(tx);
@@ -75,8 +79,8 @@ export async function importChats(rows:Chat[],onProgress?:(n:number)=>void):Prom
   }
   return count;
 }
-export async function modifyChat(id:string,patch:Partial<Pick<Chat,'pinned'|'archived'|'protected'|'folderId'>>):Promise<void>{
-  const db=await openDB();const tx=db.transaction('chats','readwrite');const done=txDone(tx);const store=tx.objectStore('chats');
+export async function modifyChat(id:string,patch:Partial<Pick<Chat,'pinned'|'archived'|'protected'|'folderId'>>,scopeId:string=activeScope()):Promise<void>{
+  const db=await openDB(scopeId);const tx=db.transaction('chats','readwrite');const done=txDone(tx);const store=tx.objectStore('chats');
   const req=store.get(id);
   req.onsuccess=()=>{
     const chat=req.result as Chat|undefined;
@@ -163,8 +167,8 @@ export async function undoLast():Promise<number>{
   await done;
   return total;
 }
-export async function replaceAll(chats:Chat[],folders:Folder[],prompts:Prompt[],queue:QueuedMessage[]=[]):Promise<void>{
-  const db=await openDB();const tx=db.transaction(['chats','folders','prompts','meta','queue'],'readwrite');const done=txDone(tx);
+export async function replaceAll(chats:Chat[],folders:Folder[],prompts:Prompt[],queue:QueuedMessage[]=[],scopeId:string=activeScope()):Promise<void>{
+  const db=await openDB(scopeId);const tx=db.transaction(['chats','folders','prompts','meta','queue'],'readwrite');const done=txDone(tx);
   const cs=tx.objectStore('chats'),fs=tx.objectStore('folders'),ps=tx.objectStore('prompts');
   cs.clear();fs.clear();ps.clear();tx.objectStore('meta').clear();tx.objectStore('queue').clear();
   for(const c of chats)cs.put(c);
@@ -178,3 +182,19 @@ export async function counts():Promise<{total:number,archived:number,pinned:numb
   const chats=await all<Chat>('chats');return {total:chats.length,archived:chats.filter(c=>c.archived).length,pinned:chats.filter(c=>c.pinned).length};
 }
 export function planItemIds(plan:Plan):string[]{return plan.recommendations.map((r:Recommendation)=>r.id);}
+
+/** Cópia não destrutiva dos registros legados. Exige banco de destino vazio. */
+export async function copyLegacyToProfile(scopeId:string,provider:'chatgpt'|'gemini'):Promise<{chats:number;folders:number;prompts:number;queue:number}>{
+  if(scopeId==='legacy')throw Error('Escolha um perfil de destino.');
+  const [existingChats,existingFolders,existingPrompts,existingQueue]=await Promise.all([
+    all<Chat>('chats',scopeId),all<Folder>('folders',scopeId),all<Prompt>('prompts',scopeId),all<QueuedMessage>('queue',scopeId)
+  ]);
+  if(existingChats.length||existingFolders.length||existingPrompts.length||existingQueue.length)throw Error('O perfil de destino já possui dados. Faça backup e escolha outro perfil para evitar sobrescrever.');
+  const [chats,folders,prompts,queue]=await Promise.all([
+    all<Chat>('chats','legacy'),all<Folder>('folders','legacy'),all<Prompt>('prompts','legacy'),all<QueuedMessage>('queue','legacy')
+  ]);
+  const included=chats.filter(c=>c.provider===provider);
+  const selectedQueue=queue.filter(q=>q.provider===provider);
+  await replaceAll(included,folders,prompts,selectedQueue,scopeId);
+  return {chats:included.length,folders:folders.length,prompts:prompts.length,queue:selectedQueue.length};
+}
