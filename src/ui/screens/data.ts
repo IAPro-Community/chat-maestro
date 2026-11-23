@@ -1,5 +1,7 @@
 import type {Context} from '../context.js';
 import {captureCurrentSidebar,captureOpenConversation} from '../../platform/capture.js';
+import {hasSiteAccess,requestSiteAccess} from '../../platform/site-access.js';
+import {PROVIDER_LABEL,type AIProvider} from '../../domain/providers.js';
 import {importChats,clearAll} from '../../platform/db.js';
 import {parseExport} from '../../domain/importer.js';
 import {downloadJson,makeBackup,parseBackup,restoreBackup} from '../../platform/backup.js';
@@ -14,9 +16,31 @@ async function readJson(file:File):Promise<unknown>{
 }
 export function renderData(ctx:Context):HTMLElement{
   const fold=(name:string,content:HTMLElement):HTMLDetailsElement=>{const details=el('details','disclosure');details.append(el('summary','disclosure-trigger',name),content);return details;};
-  const root=el('section','screen');root.append(el('h2','screen-title','Dados e privacidade'));
-  const capture=el('div','panel');capture.append(el('h3','section-heading','Capturar lista atual'));
-  capture.append(el('p','hint','Captura sob demanda títulos e links visíveis da aba ChatGPT ou Gemini. Não lê mensagens, cookies nem histórico oculto.'));
+  const root=el('section','screen');root.append(el('h2','screen-title','Conectar e importar'));
+  const site=el('div','panel site-access-panel');
+  site.append(el('h3','section-heading','Conectar seus assistentes'));
+  site.append(el('p','hint','Autorize uma única vez o acesso ao ChatGPT ou Gemini. A permissão é limitada aos domínios escolhidos e pode ser revogada nas configurações de extensões do Chrome.'));
+  const indicators=el('div','site-access-indicators');
+  const controls=el('div','buttons site-access-buttons');
+  for(const provider of ['chatgpt','gemini'] as const){
+    const badge=el('span','access-indicator',PROVIDER_LABEL[provider]+': verificando…');
+    indicators.append(badge);
+    controls.append(action('Conectar '+PROVIDER_LABEL[provider],()=>{
+      // Solicita permissão diretamente durante o clique, sem await anterior.
+      return requestSiteAccess(provider).then(async granted=>{
+        if(!granted)throw Error('Permissão para '+PROVIDER_LABEL[provider]+' não concedida. A biblioteca local continua disponível.');
+        notify(PROVIDER_LABEL[provider]+' conectado. Agora você pode capturar conversas.');
+        await ctx.refresh();
+      });
+    }));
+    void hasSiteAccess(provider).then(granted=>{
+      badge.textContent=PROVIDER_LABEL[provider]+': '+(granted?'autorizado':'não conectado');
+      badge.classList.toggle('access-granted',granted);
+    }).catch(()=>{badge.textContent=PROVIDER_LABEL[provider]+': estado indisponível';});
+  }
+  site.append(indicators,controls);root.append(site);
+  const capture=el('div','panel capture-panel');capture.append(el('h3','section-heading','Capturar lista atual'));
+  capture.append(el('p','hint','Captura títulos e links visíveis do site autorizado. Não lê mensagens nem histórico oculto. Se estiver na página inicial, abra uma conversa específica para salvá-la.'));
   capture.append(action('Capturar barra lateral',async()=>{
     const {count,provider}=await captureCurrentSidebar();notify(`${count} links do ${provider} capturados ou atualizados.`);await ctx.refresh();
   },'primary'));
