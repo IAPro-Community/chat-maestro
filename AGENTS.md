@@ -49,3 +49,11 @@ Extensão independente de Chrome para ChatGPT e Gemini. Mantenha produto leve e 
 - Documentar capabilities por provedor e não anunciar suporte onde só há parser de URL ou dados simulados.
 - Não usar `getAll()` como fonte da verdade de busca em escala; não misturar contas dentro do mesmo provider ID.
 - O fluxo de limpeza deve distinguir arquivos local e remoto; fila automática somente após teste E2E de estado/entrega e opt-in.
+
+## Regras da integração contextual v0.5.0
+
+- Novo content script precisa ser IIFE empacotado (esbuild apenas build), com source TS modular e script MV3 registrado por permissão opcional.
+- Toda mensagem enviada pelo content script deve ser revalidada no worker (domínio, aba, frame, ID, permissão). O host DOM é não confiável.
+- Nunca ler cookies/tokens, invocar endpoints privados, gravar histórico sem clique ou tratar captura de título como sincronização de mensagens.
+- Sem `accountScope` comprovado, proibir ações remotas, automação de limpeza/arquivo e envio de fila. A integração v0.5 é **experimental**.
+- Documentação e claims devem seguir `docs/INPAGE_MVP.md`. O gate E2E exige navegador com sessões autenticadas e prints reais.

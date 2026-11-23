@@ -26,3 +26,12 @@
 ## Restrições conhecidas
 
 A pesquisa de conteúdo ainda carrega metadados e mensagens na memória para a busca; precisa índice/paginação para bibliotecas enormes. A captura de Gemini depende de links no DOM e não é uma integração oficial. O editor de ambas plataformas pode mudar sem aviso. Não há separação por conta quando múltiplos perfis dos mesmos provedores são usados dentro do mesmo perfil Chrome — antes da automação remota, essa distinção é obrigatória.
+
+## In-page v0.5.0 (primeira etapa)
+
+- `src/content/inpage.ts` monta um controle compacto em Shadow DOM, com observação de mudança de rota, sem capturar corpos de mensagens.
+- `src/content/adapters.ts` separa heurísticas de título de ChatGPT/Gemini e conserva fallback.
+- `src/domain/inpage-contract.ts` valida payloads, origem, rota canônica e identidade da conversa.
+- `src/platform/inline-registration.ts` registra/desregistra scripts conforme host permissions opcionais; `src/platform/site-access.ts` ativa a aba atual depois do consentimento.
+- Somente o worker valida pedidos e grava no IndexedDB local. O conteúdo foi empacotado em IIFE; worker MV3 segue ESM.
+- **Limite conhecido:** não há prova de identidade de conta no mesmo perfil Chrome. Proibidas mutações remotas até modelar e homologar accountScope. Veja `docs/INPAGE_MVP.md`.

@@ -18,7 +18,11 @@ O usuário não precisa de outro portal de links de conversas. O Chat Maestro de
 - [ ] Definir fixtures e fluxos E2E em Chrome/Edge para ChatGPT/Gemini.
 **Saída:** teste real de abrir, identificar provedor, detectar troca de conversa, reconectar e preservar dados, sem claims indevidos.
 
-### P0-B: integração contextual por provedor
+### P0-B: integração contextual por provedor (em andamento na v0.5.0)
+- [x] Registro dinâmico e permissões opcionais por provedor; contrato de mensagens seguro entre site e worker.
+- [x] Primeiro botão in-page para salvar, favoritar, mover para pasta local e abrir biblioteca.
+- [x] Adaptadores de títulos e suporte por parser a URLs de projetos ChatGPT.
+- [ ] Provar injeção, estilos e navegação SPA em Chrome/Edge real com contas autenticadas.
 - [ ] Adaptadores independentes ChatGPT/Gemini para identidade, estado de conversa, observação da navegação SPA, leitura consentida e compositor.
 - [ ] Controle in-page mínimo para favoritar/mover/abrir biblioteca, ativável separadamente por site e módulo.
 - [ ] Fila/manual e captura utilizam um único resolvedor de contexto com falhas explicativas.

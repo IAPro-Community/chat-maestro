@@ -1,4 +1,4 @@
-# Homologação manual v0.4.1
+# Homologação manual v0.5.0
 
 Marque cada caso antes da publicação. **Os testes automatizados não substituem estes cenários.**
 
@@ -48,3 +48,15 @@ Marque cada caso antes da publicação. **Os testes automatizados não substitue
 - [ ] A 320px, a Biblioteca continua em lista; na janela larga mostra coleções/pastas à esquerda e cartões ao centro.
 - [ ] Selecionar Ativas, Todas, Favoritas, Arquivadas e pasta existente; conferir filtros, contador e busca.
 - [ ] Testar tema claro/escuro, teclado, rolagem, 100 resultados e operações em lote sem perda de dados.
+
+## P0 — integração contextual (v0.5.0)
+
+- [ ] Autorizar somente ChatGPT; confirmar botão Maestro na página aberta e ausência no Gemini sem permissão.
+- [ ] Em ChatGPT `/c/:id` e `/g/:gpt/c/:id`, verificar salvar, favoritar e mover para pasta local, sem alterar a conta.
+- [ ] Em Gemini `/app/:id`, repetir ações e confirmar isolamento por provedor.
+- [ ] Navegar entre conversas pela sidebar SPA; o botão não duplica e ações não modificam o ID anterior.
+- [ ] Revogar permissão e atualizar a página; o botão não deve reaparecer e ações anteriores não podem gravar no banco.
+- [ ] Página inicial sem conversa: permitir abrir Biblioteca, mas bloquear salvar/favoritar/mover.
+- [ ] Verificar foco, contraste, abertura/fechamento e ausência de conflito com compositor nas larguras 320/400/520px.
+- [ ] Confirmar mensagem de **identidade da conta não verificada**; não habilitar comandos remotos ou sincronização automática.
+- [ ] Registrar screenshots reais, navegador/versão, provedor, contexto, logs e resultado antes de marcar homologado.
