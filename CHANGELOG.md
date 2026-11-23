@@ -4,7 +4,7 @@
 
 - Substituídos os ícones vetoriais interpretativos por PNGs derivados diretamente da arte aprovada do Chat Maestro.
 - Fonte raster 256 px versionada, gerador simplificado e verificação de identidade para os quatro tamanhos MV3.
-- Cabeçalho do painel, favicon, README e ícone explícito da ação do Chrome apontam para a mesma família visual.
+- Cabeçalho do painel, favicon, banner real do README e ícone explícito da ação do Chrome apontam para a mesma família visual.
 - CI passa a validar também o empacotamento ZIP da extensão; removido um listener de teclado duplicado.
 - Permissões, ID da extensão, IndexedDB e comportamento de chats/filas preservados.
 - Publicação na Web Store e homologação visual no Chrome real ainda pendentes.

@@ -11,6 +11,7 @@ A fonte versionada é `assets/brand/icon-source.png` (256 × 256 px). Os PNGs em
 | Arquivo | Uso |
 | --- | --- |
 | `assets/brand/icon-source.png` | Fonte raster canônica para evolução dos ícones |
+| `assets/brand/readme-banner.png` | Logotipo horizontal aprovado, otimizado para o README |
 | `assets/icon16.png` | Barra de ferramentas / ação Chrome |
 | `assets/icon32.png` | Interface / ação Chrome e favicon do painel |
 | `assets/icon48.png` | Gerenciador de extensões |

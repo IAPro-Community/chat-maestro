@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/icon128.png" alt="Ícone oficial do Chat Maestro: maestro com batuta e balão de conversa" width="104" height="104">
+  <img src="assets/brand/readme-banner.png" alt="Chat Maestro: logotipo oficial com mascote maestro, batuta e tipografia em branco e bordô" width="640">
 </p>
 
 <h1 align="center">Chat Maestro</h1>
