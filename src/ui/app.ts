@@ -13,7 +13,7 @@ async function refresh():Promise<void>{
   try{
     const ctx:Context=await loadData(refresh);
     const top=el('header','topbar');
-    const brand=el('div','branding');const mark=el('span','brand-mark','i');
+    const brand=el('div','branding');const mark=el('img','brand-mark');mark.src='assets/chat-maestro-icon.svg';mark.alt='';mark.width=40;mark.height=40;mark.setAttribute('aria-hidden','true');
     const titles=el('div');titles.append(el('strong','brand-title','Chat Maestro'),el('span','brand-subtitle','Seu espaço, sob controle.'));
     brand.append(mark,titles);top.append(brand);
     const statistics=el('div','statistics');

@@ -1,5 +1,13 @@
 # Changelog
 
+## Não lançado — Identidade visual do Chat Maestro
+
+- Novo símbolo do maestro com batuta e movimento de regência, reconstruído em SVG.
+- Atualizados ícones MV3 16/32/48/128 px, cabeçalho do painel e cores de destaque.
+- Incluídos fonte vetorial, gerador reproduzível, documentação e testes dos ícones.
+- Sem mudança de permissões, armazenamento ou captura.
+
+
 ## 0.3.1 — Identidade Chat Maestro (2026-11-22)
 
 - Identidade pública de extensão, pacote, documentação e interface unificada como Chat Maestro.

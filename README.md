@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/icon128.png" alt="Ícone do Chat Maestro" width="104" height="104">
+  <img src="assets/chat-maestro-icon.svg" alt="Símbolo do Chat Maestro" width="104" height="104">
 </p>
 
 <h1 align="center">Chat Maestro</h1>
@@ -133,6 +133,8 @@ A ideia não é acrescentar dezenas de botões. É resolver melhor os poucos pro
 O avanço é guiado por **problemas observados, testes reproduzíveis e compatibilidade**. Se uma automação não puder confirmar o que fez, ela não será anunciada como pronta.
 
 Acompanhe o [roadmap detalhado](docs/ROADMAP.md), o [histórico de versões](CHANGELOG.md) e a [pesquisa de funcionalidades](docs/PESQUISA_FUNCIONALIDADES.md).
+
+A identidade visual representa um maestro conduzindo diferentes conversas. Veja o [símbolo vetorial](assets/chat-maestro-icon.svg), a [assinatura da marca](assets/chat-maestro-wordmark.svg) e as [orientações de uso](docs/BRAND_IDENTITY.md).
 
 ## Pequeno por escolha. Preparado para crescer.
 
