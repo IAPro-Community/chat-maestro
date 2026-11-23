@@ -27,14 +27,23 @@ function card(chat:Chat,ctx:Context,selected:Set<string>,onSelection:()=>void):H
   if(chat.pinned)head.append(el('span','pill accent','Fixada'));
   if(chat.protected)head.append(el('span','pill','Protegida'));
   item.append(head);
-  const actions=el('div','chat-actions');
-  actions.append(action('Abrir',()=>safeOpen(chat.url),'primary'));
-  actions.append(action(chat.pinned?'Desafixar':'Fixar',async()=>{await modifyChat(chat.id,{pinned:!chat.pinned});await ctx.refresh();}));
-  actions.append(action(chat.archived?'Restaurar':'Arquivar localmente',async()=>{await modifyChat(chat.id,{archived:!chat.archived});await ctx.refresh();}));
-  actions.append(action(chat.protected?'Desproteger':'Proteger',async()=>{await modifyChat(chat.id,{protected:!chat.protected});await ctx.refresh();}));
+  const actions=el('div','chat-actions chat-primary-actions');
+  actions.append(action('Abrir conversa',()=>safeOpen(chat.url),'primary'));
+  actions.append(action(chat.pinned?'Desafixar':'Favoritar',async()=>{await modifyChat(chat.id,{pinned:!chat.pinned});await ctx.refresh();}));
+  item.append(actions);
+  const more=el('details','card-more disclosure subtle-disclosure');
+  more.append(el('summary','disclosure-trigger','Mais ações'));
+  const secondary=el('div','chat-actions secondary-actions');
+  secondary.append(action(chat.archived?'Restaurar':'Arquivar localmente',async()=>{await modifyChat(chat.id,{archived:!chat.archived});await ctx.refresh();}));
+  secondary.append(action(chat.protected?'Desproteger':'Proteger',async()=>{await modifyChat(chat.id,{protected:!chat.protected});await ctx.refresh();}));
   const selector=el('select','folder-select');selector.setAttribute('aria-label',`Pasta de ${chat.title}`);options(selector,ctx.folders,chat.folderId);
   selector.addEventListener('change',()=>{void modifyChat(chat.id,{folderId:selector.value||null}).then(ctx.refresh).catch(err=>notify(String(err),true));});
-  actions.append(selector);item.append(actions);
+  secondary.append(selector);
+  secondary.append(action('Remover registro',async()=>{
+    if(!confirmAction('Remover este registro apenas do Chat Maestro? A conversa na sua conta não será excluída.'))return;
+    await remove('chats',chat.id);await ctx.refresh();
+  },'danger'));
+  more.append(secondary);item.append(more);
   if(chat.messages.length){
     const details=el('details','messages');const summary=el('summary','',`Ler ${chat.messages.length} mensagens importadas`);details.append(summary);
     const container=el('div','message-list');
@@ -45,12 +54,7 @@ function card(chat:Chat,ctx:Context,selected:Set<string>,onSelection:()=>void):H
     if(chat.messages.length>80)container.append(el('p','hint','Prévia limitada a 80 mensagens. O backup preserva todas as importadas.'));
     details.append(container);item.append(details);
   }
-  const foot=el('div','card-footer');
-  foot.append(action('Remover da biblioteca',async()=>{
-    if(!confirmAction('Remover este registro apenas da IAPro? A conversa na sua conta não será excluída.'))return;
-    await remove('chats',chat.id);await ctx.refresh();
-  },'danger'));
-  item.append(foot);return item;
+  return item;
 }
 export function renderLibrary(ctx:Context):HTMLElement{
   const root=el('section','screen');root.append(el('h2','screen-title','Sua biblioteca'));

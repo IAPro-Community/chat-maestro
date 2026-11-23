@@ -27,6 +27,7 @@ test('library offers quick capture and hides unused bulk actions',()=>{
   assert.match(library,/Salvar conversa aberta/);
   assert.match(library,/Capturar lista visível/);
   assert.match(library,/bulk\.hidden=selected\.size===0/);
+  assert.match(library,/el\('details','card-more disclosure subtle-disclosure'\)/);
   assert.equal((library.match(/search\.id='iapro-search'/g)||[]).length,1);
 });
 test('organizer displays preview first and does not duplicate export button',()=>{

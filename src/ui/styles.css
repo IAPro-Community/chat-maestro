@@ -93,3 +93,8 @@ input[type="checkbox"]{accent-color:var(--cm-brand)}
   .prompt-card .prompt-preview{background:#29232a;color:#eedee7;border-color:#463543}
   .toast.is-ok{background:#263b32;color:#b5f4d2}.toast.is-error{background:#482731;color:#ffb6c6}
 }
+.card-more{margin-top:6px;border:0;background:transparent}
+.card-more>.disclosure-trigger{padding:4px 0;font-size:10px;color:var(--cm-muted);font-weight:600}
+.card-more[open]>.disclosure-trigger{border:0}
+.secondary-actions{padding-top:6px;border-top:1px solid var(--cm-line);margin-top:2px;flex-wrap:wrap}
+.secondary-actions .folder-select{flex:1}
