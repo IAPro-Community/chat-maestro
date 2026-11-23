@@ -5,6 +5,7 @@ import {serializeChats,type ExportFormat} from '../../domain/exporter.js';
 import {el,action,empty,formatDate,safeOpen,confirmAction,notify,downloadText} from '../dom.js';
 import type {Context} from '../context.js';
 import {captureOpenConversation,captureCurrentSidebar} from '../../platform/capture.js';
+import {hasSiteAccess,requestSiteAccess} from '../../platform/site-access.js';
 type Filter='active'|'all'|'pinned'|'archived';
 let filter:Filter='active';let query='';let folderFilter='all';let providerFilter:'all'|AIProvider='all';
 const normalize=(t:string)=>t.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR');
@@ -59,6 +60,25 @@ function card(chat:Chat,ctx:Context,selected:Set<string>,onSelection:()=>void):H
 export function renderLibrary(ctx:Context):HTMLElement{
   const root=el('section','screen');root.append(el('h2','screen-title','Sua biblioteca'));
   root.append(el('p','hint','Encontre o que importa, organize por assunto e retome qualquer conversa. Tudo na sua biblioteca local.'));
+  const sources=el('div','source-connections');sources.setAttribute('aria-label','Permissões de acesso aos assistentes');
+  for(const provider of ['chatgpt','gemini'] as const){
+    const label=PROVIDER_LABEL[provider];
+    const connect=action(label+' · conectar',()=>{
+      return requestSiteAccess(provider).then(async accepted=>{
+        if(!accepted)throw Error('Acesso ao '+label+' não autorizado. Você ainda pode usar os dados locais.');
+        notify(label+' conectado. A captura está disponível.');
+        await ctx.refresh();
+      });
+    });
+    connect.classList.add('connection-chip');
+    void hasSiteAccess(provider).then(allowed=>{
+      connect.textContent=label+(allowed?' · conectado':' · conectar');
+      connect.disabled=allowed;
+      connect.classList.toggle('is-connected',allowed);
+    }).catch(()=>{connect.textContent=label+' · verificar acesso';});
+    sources.append(connect);
+  }
+  root.append(sources);
   const captureActions=el('div','buttons quick-actions');
   captureActions.append(action('Salvar conversa aberta',async()=>{await captureOpenConversation();notify('Conversa adicionada à biblioteca.');await ctx.refresh();},'primary'),action('Capturar lista visível',async()=>{const result=await captureCurrentSidebar();notify(`${result.count} conversa(s) do ${result.provider} adicionadas.`);await ctx.refresh();}));
   root.append(captureActions);
@@ -104,7 +124,7 @@ export function renderLibrary(ctx:Context):HTMLElement{
     }).sort((a,b)=>(b.updatedAt??b.importedAt)-(a.updatedAt??a.importedAt));
     visibleRows=rows.slice(0,100);
     result.replaceChildren();
-    if(!rows.length)result.append(empty(ctx.chats.length?'Nenhuma conversa corresponde aos filtros.':'Sua biblioteca está vazia. Abra uma conversa no ChatGPT ou Gemini e clique em Salvar conversa aberta.'));
+    if(!rows.length)result.append(empty(ctx.chats.length?'Nenhuma conversa corresponde aos filtros.':'Comece conectando ChatGPT ou Gemini acima. Abra uma conversa e clique em “Salvar conversa aberta”.'));
     else for(const c of visibleRows)result.append(card(c,ctx,selected,updateSelection));
     if(rows.length>100)result.append(el('p','hint',`Exibindo 100 de ${rows.length} resultados. Refine a busca.`));
   };
