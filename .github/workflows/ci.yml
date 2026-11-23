@@ -13,6 +13,6 @@ jobs:
       - run: npm run package
       - uses: actions/upload-artifact@v4
         with:
-          name: chat-maestro-unpacked-package
-          path: release/chat-maestro-v*-instalar.zip
+          name: chat-maestro-instalar
+          path: dist/
           if-no-files-found: error
