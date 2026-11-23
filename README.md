@@ -29,6 +29,8 @@
 
 > **Prévia para desenvolvimento · v0.4.1.** A base já inclui biblioteca, organização local e fila de mensagens. A integração visual com sessões autenticadas de ChatGPT e Gemini ainda precisa de homologação. Não há publicação na Chrome Web Store nesta fase.
 
+> **Direção de produto revista (novembro de 2026):** a extensão atual ainda é uma biblioteca local limitada e não entrega toda a experiência in-page, busca completa, arquivamento na conta ou fila automática que queremos. Leia a [auditoria e rebaseline do produto](docs/PRODUCT_REBASELINE_2026-11.md) e a [issue de execução](https://github.com/IAPro-Community/chat-maestro/issues/2). Não confunda recursos planejados com funcionalidades disponíveis.
+
 ## O problema não é conversar com IA. É encontrar a conversa depois.
 
 Você começa um chat para resolver uma dúvida. Em seguida, abre outro para trabalhar, outro para estudar, outro para testar uma ideia. Sem perceber, o histórico virou uma lista enorme de assuntos misturados.

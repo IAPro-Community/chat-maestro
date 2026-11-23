@@ -42,3 +42,10 @@ Extensão independente de Chrome para ChatGPT e Gemini. Mantenha produto leve e 
 ## Duas superfícies, uma aplicação
 - `panel.html` e `manager.html` carregam `ui/app.js`; nunca bifurcar domínio, IndexedDB ou lógica de ações para a tela cheia.
 - A árvore de pastas e o grid são uma apresentação responsiva apenas na biblioteca ampliada. Não expor tags, anexos ou notas como filtros sem fonte de dados e testes.
+
+## Direção de produto — rebaseline novembro/2026
+- Leia `docs/PRODUCT_REBASELINE_2026-11.md` antes de acrescentar features ou refazer interface.
+- **Primeiro fluxo in-page real**, com adaptadores e identidade de conta; depois biblioteca/indexação, arquivo na conta e fila. Side panel e manager são superfícies auxiliares compartilhadas, não produtos diferentes.
+- Documentar capabilities por provedor e não anunciar suporte onde só há parser de URL ou dados simulados.
+- Não usar `getAll()` como fonte da verdade de busca em escala; não misturar contas dentro do mesmo provider ID.
+- O fluxo de limpeza deve distinguir arquivos local e remoto; fila automática somente após teste E2E de estado/entrega e opt-in.
