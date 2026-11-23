@@ -8,13 +8,18 @@
 
 ### 1. Baixe o ZIP instalável
 
-O pacote é criado automaticamente pela [CI do Chat Maestro](https://github.com/IAPro-Community/chat-maestro/actions/workflows/ci.yml):
+**[⬇ Baixar Chat Maestro para Chrome (.zip) — prévia de desenvolvimento](https://github.com/IAPro-Community/chat-maestro/releases/download/preview/chat-maestro-preview.zip)**
 
-1. Abra o link da CI e escolha a **execução mais recente da branch `main` com status verde (Success)**.
-2. Em **Artifacts**, baixe `chat-maestro-instalar` (pode ser necessário estar logado no GitHub).
-3. **Extraia esse ZIP uma única vez** para uma pasta **fixa**, como `Documentos/Chat-Maestro` no Windows. Ela conterá diretamente `manifest.json`, `panel.html`, `worker.js` e as demais pastas. Não remova nem renomeie essa pasta depois da instalação.
+O link leva diretamente ao arquivo `chat-maestro-preview.zip` publicado em [GitHub Releases](https://github.com/IAPro-Community/chat-maestro/releases/tag/preview). Não é preciso abrir o GitHub Actions, escolher uma execução ou fazer login no GitHub.
 
-> **Importante:** baixe o artefato apenas de uma execução bem-sucedida da CI. Não use **Code → Download ZIP** como instalador: ele baixa o **código-fonte**, que exige compilação. O Chrome **não instala diretamente um ZIP**; é necessário descompactá-lo. Se você já possui o arquivo `chat-maestro-vX.Y.Z-instalar.zip` gerado pelo build local, extraia-o diretamente da mesma maneira.
+1. Baixe o arquivo `.zip`.
+2. **Extraia o ZIP uma única vez** para uma pasta fixa, por exemplo `Documentos/Chat-Maestro` no Windows.
+3. A pasta extraída deve conter diretamente `manifest.json`, `panel.html`, `worker.js` e os demais arquivos.
+4. Não remova nem renomeie essa pasta após carregar a extensão no Chrome.
+
+> **Importante:** o Chrome não instala um arquivo ZIP diretamente. Use **Carregar sem compactação** na pasta extraída. O botão **Code → Download ZIP** do GitHub baixa o código-fonte, que exige compilação, e não deve ser usado como instalador.
+
+O download direto aponta para a **prévia mais recente publicada** a partir de um build aprovado da branch `main`. É uma distribuição de teste, ainda não homologada para produção. Se preferir compilar manualmente, há instruções no fim deste guia.
 
 ### 2. Ative o modo desenvolvedor
 

@@ -98,19 +98,20 @@ flowchart LR
 
 ## Comece pelo Chrome
 
-**Não precisa programar para testar.** O Chat Maestro ainda não está na Chrome Web Store, mas o ZIP instalável é gerado automaticamente pelo GitHub Actions.
+**[⬇ Baixar Chat Maestro para Chrome (.zip) — prévia de desenvolvimento](https://github.com/IAPro-Community/chat-maestro/releases/download/preview/chat-maestro-preview.zip)**
 
-**[Guia completo de instalação e atualização](docs/INSTALACAO.md)** · **[Baixar pacote da CI](https://github.com/IAPro-Community/chat-maestro/actions/workflows/ci.yml)**
+Sem GitHub Actions, sem criar conta no GitHub e sem instalar Node.js. O botão acima baixa a versão de desenvolvimento publicada no [GitHub Releases](https://github.com/IAPro-Community/chat-maestro/releases/tag/preview) a partir de uma compilação validada pela CI.
 
-1. Abra a **CI**, escolha a execução mais recente da `main` com **Success** e baixe o artefato `chat-maestro-instalar`.
-2. Extraia o ZIP baixado **uma única vez** para uma **pasta fixa**.
-3. Abra `chrome://extensions`, ative **Modo do desenvolvedor** e clique em **Carregar sem compactação**.
-4. Escolha a pasta extraída que contém diretamente o `manifest.json`.
-5. Fixe o ícone da extensão e clique nele para abrir o painel lateral.
+1. **Baixe o ZIP** e extraia os arquivos para uma pasta fixa, como `Documentos/Chat-Maestro`.
+2. No Chrome, abra `chrome://extensions` e ative **Modo do desenvolvedor**.
+3. Clique em **Carregar sem compactação** e selecione a pasta que contém `manifest.json`.
+4. Fixe o ícone **Chat Maestro** no menu de extensões e abra o painel lateral.
 
-> **Não use o ZIP de “Code → Download ZIP” como instalador:** ele contém o código-fonte, não a extensão compilada. Não instale um segundo ID sem antes fazer backup dos dados da instalação anterior.
+> **Prévia:** a versão atual é destinada a testes; a integração visual com sessões autenticadas de ChatGPT e Gemini ainda está em homologação. O download não é uma instalação pela Chrome Web Store. **O ZIP deve ser extraído** antes de carregar a extensão.
 
-Para quem desenvolve, há também o caminho com Node.js 22+:
+**[Guia completo com atualização, backup e resolução de problemas](docs/INSTALACAO.md)**
+
+Para desenvolvedores (Node.js 22+):
 
 ```bash
 git clone https://github.com/IAPro-Community/chat-maestro.git
@@ -119,7 +120,7 @@ npm install
 npm run package
 ```
 
-O pacote compilado estará em `release/chat-maestro-v<versao>-instalar.zip`. O guia detalha como **atualizar sem perder a biblioteca**, diagnosticar problemas de carregamento e testar ChatGPT/Gemini, sem confundir arquivamento local com arquivamento da conta.
+O build local gera `release/chat-maestro-v<versao>-instalar.zip`. Para usuários finais, use o **download direto** acima.
 
 ## Para onde vamos
 

@@ -1,8 +1,11 @@
 name: CI
 on: [push, pull_request]
+
 jobs:
   validate:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -16,3 +19,43 @@ jobs:
           name: chat-maestro-instalar
           path: dist/
           if-no-files-found: error
+
+  publish-preview:
+    name: Publicar ZIP de prévia
+    needs: validate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: chat-maestro-preview-release
+      cancel-in-progress: true
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: chat-maestro-instalar
+          path: dist/
+      - name: Empacotar os arquivos validados
+        run: |
+          test -f dist/manifest.json
+          test -f dist/panel.html
+          test -f dist/worker.js
+          mkdir -p release
+          cd dist
+          zip -q -r ../release/chat-maestro-preview.zip .
+      - name: Publicar download direto
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          if gh release view preview >/dev/null 2>&1; then
+            gh release upload preview release/chat-maestro-preview.zip --clobber
+          else
+            gh release create preview release/chat-maestro-preview.zip \
+              --title "Chat Maestro — Prévia de desenvolvimento" \
+              --notes "Distribuição experimental, sem homologação de integração com contas ChatGPT/Gemini. Consulte docs/INSTALACAO.md." \
+              --prerelease --target "$GITHUB_SHA"
+          fi
+          gh release edit preview --title "Chat Maestro — Prévia de desenvolvimento" --prerelease \
+            --notes "ZIP gerado por CI aprovada de main. Commit de origem: $GITHUB_SHA. Extensão experimental: as integrações de navegador ainda precisam de homologação. Instalação: docs/INSTALACAO.md."
