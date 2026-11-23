@@ -91,10 +91,14 @@ export async function put<T extends {id:string}>(name:StoreName,item:T,scopeId:s
 }
 export async function remove(name:StoreName,id:string):Promise<void>{
   const db=await openDB();
-  const stores:StoreName[]=name==='chats'?['chats','search']:[name];
+  const stores:StoreName[]=name==='chats'?['chats','search','bookmarks']:[name];
   const tx=db.transaction(stores,'readwrite');const done=txDone(tx);
   tx.objectStore(name).delete(id);
-  if(name==='chats')dropIndex(tx,id);
+  if(name==='chats'){
+    dropIndex(tx,id);
+    const cursor=tx.objectStore('bookmarks').index('byChat').openCursor(IDBKeyRange.only(id));
+    cursor.onsuccess=()=>{const row=cursor.result;if(row){row.delete();row.continue();}};
+  }
   await done;
 }
 /** Indexa somente títulos e conteúdo efetivamente armazenado: nunca baixa histórico oculto. */
@@ -288,16 +292,19 @@ export function planItemIds(plan:Plan):string[]{return plan.recommendations.map(
 export async function copyLegacyToProfile(scopeId:string,provider:'chatgpt'|'gemini'):Promise<{chats:number;folders:number;prompts:number;queue:number}>{
   if(scopeId===LEGACY_SCOPE)throw Error('Escolha um perfil de destino.');
   await requireProfile(scopeId,provider);
-  const [existingChats,existingFolders,existingPrompts,existingQueue]=await Promise.all([
-    all<Chat>('chats',scopeId),all<Folder>('folders',scopeId),all<Prompt>('prompts',scopeId),all<QueuedMessage>('queue',scopeId)
+  const [existingChats,existingFolders,existingPrompts,existingQueue,existingBookmarks,existingChains]=await Promise.all([
+    all<Chat>('chats',scopeId),all<Folder>('folders',scopeId),all<Prompt>('prompts',scopeId),all<QueuedMessage>('queue',scopeId),
+    all<Bookmark>('bookmarks',scopeId),all<PromptChain>('chains',scopeId)
   ]);
-  if(existingChats.length||existingFolders.length||existingPrompts.length||existingQueue.length)throw Error('O perfil de destino já possui dados. Faça backup e escolha outro perfil para evitar sobrescrever.');
-  const [chats,folders,prompts,queue]=await Promise.all([
-    all<Chat>('chats','legacy'),all<Folder>('folders','legacy'),all<Prompt>('prompts','legacy'),all<QueuedMessage>('queue','legacy')
+  if(existingChats.length||existingFolders.length||existingPrompts.length||existingQueue.length||existingBookmarks.length||existingChains.length)throw Error('O perfil de destino já possui dados. Faça backup e escolha outro perfil para evitar sobrescrever.');
+  const [chats,folders,prompts,queue,bookmarks,chains]=await Promise.all([
+    all<Chat>('chats','legacy'),all<Folder>('folders','legacy'),all<Prompt>('prompts','legacy'),all<QueuedMessage>('queue','legacy'),
+    all<Bookmark>('bookmarks','legacy'),all<PromptChain>('chains','legacy')
   ]);
   const included=chats.filter(c=>c.provider===provider);
   const selectedQueue=queue.filter(q=>q.provider===provider);
-  await replaceAll(included,folders,prompts,selectedQueue,scopeId);
+  const ids=new Set(included.map(c=>c.id));
+  await replaceAll(included,folders,prompts,selectedQueue,scopeId,bookmarks.filter(b=>ids.has(b.chatId)),chains);
   // Copia regras que referenciam as pastas migradas; desliga execução diária.
   const legacySettings=(await chrome.storage.local.get('iapro.settings.v1'))['iapro.settings.v1'];
   if(legacySettings!==undefined){
