@@ -82,13 +82,6 @@ export function renderOrganize(ctx:Context):HTMLElement{
       downloadText(`iapro-revisao-limpeza-${new Date().toISOString().slice(0,10)}.json`,serializeChats(selection,'json'),'application/json');
       notify('Cópia da seleção preparada para revisão.');
     }));
-    preview.append(action('Exportar conversas sugeridas (JSON)',()=>{
-      const ids=new Set(plan.recommendations.map(r=>r.id));
-      const selection=ctx.chats.filter(c=>ids.has(c.id)).slice(0,100);
-      if(!selection.length)throw Error('Não há conversas elegíveis.');
-      downloadText(`iapro-revisao-limpeza-${new Date().toISOString().slice(0,10)}.json`,serializeChats(selection,'json'),'application/json');
-      notify('Cópia da seleção preparada para revisão.');
-    }));
     preview.append(action(`Aplicar ${plan.recommendations.length} alterações locais`,async()=>{
       if(!confirmAction('Aplicar sugestões APENAS na biblioteca IAPro? Isso não arquiva conversas nas contas ChatGPT ou Gemini.'))return;
       const current=makePlan(await all('chats'),ctx.folders,await loadSettings());
@@ -103,5 +96,14 @@ export function renderOrganize(ctx:Context):HTMLElement{
   }));root.append(preview);
   const notice=el('div','note');notice.append(el('strong','','Diferença importante'));
   notice.append(el('p','','Arquivar nesta extensão apenas muda sua biblioteca IAPro. Para tirar a conversa da barra lateral da conta, abra o chat e use Arquivar no menu nativo do ChatGPT ou Gemini, conforme a plataforma.'));
-  root.append(notice);return root;
+  const fold=(name:string,content:HTMLElement):HTMLDetailsElement=>{
+    const details=el('details','disclosure');details.append(el('summary','disclosure-trigger',name),content);return details;
+  };
+  const intro=[root.firstChild!,root.children[1]!];
+  root.replaceChildren(...intro,preview,
+    fold('Política de arquivamento local',policy),
+    fold(`Pastas (${ctx.folders.length})`,folders),
+    fold(`Regras de classificação (${settings.rules.length})`,rules),notice);
+  return root;
+
 }

@@ -3,7 +3,7 @@
   "name": "Chat Maestro",
   "short_name": "Maestro",
   "description": "Organize conversas de ChatGPT e Gemini, prompts, busca e exportação com privacidade e segurança.",
-  "version": "0.3.4",
+  "version": "0.4.0",
   "minimum_chrome_version": "116",
   "permissions": [
     "sidePanel",

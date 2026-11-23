@@ -13,6 +13,7 @@ async function readJson(file:File):Promise<unknown>{
   try{return JSON.parse(await file.text()) as unknown;}catch{throw Error('JSON inválido ou arquivo corrompido.');}
 }
 export function renderData(ctx:Context):HTMLElement{
+  const fold=(name:string,content:HTMLElement):HTMLDetailsElement=>{const details=el('details','disclosure');details.append(el('summary','disclosure-trigger',name),content);return details;};
   const root=el('section','screen');root.append(el('h2','screen-title','Dados e privacidade'));
   const capture=el('div','panel');capture.append(el('h3','section-heading','Capturar lista atual'));
   capture.append(el('p','hint','Captura sob demanda títulos e links visíveis da aba ChatGPT ou Gemini. Não lê mensagens, cookies nem histórico oculto.'));
@@ -36,7 +37,7 @@ export function renderData(ctx:Context):HTMLElement{
       notify(`${data.items.length} conversas importadas. ${data.skipped} registros ignorados.`);
       await ctx.refresh();
     }finally{importButton.disabled=false;}
-  },'primary');imp.append(picker,importButton,progress);root.append(imp);
+  },'primary');imp.append(picker,importButton,progress);root.append(fold("Importar histórico do ChatGPT",imp));
   const backup=el('div','panel');backup.append(el('h3','section-heading','Backup e restauração'));
   backup.append(el('p','hint','Salve a biblioteca ChatGPT + Gemini, pastas, prompts e regras em um JSON local v3 (incluindo a fila de mensagens). Aceita backups IAPro v1/v2 e Conversation Workspace v3. O arquivo pode conter textos sensíveis.'));
   backup.append(action('Baixar backup completo',async()=>{downloadJson(`iapro-backup-${new Date().toISOString().slice(0,10)}.json`,await makeBackup());notify('Backup preparado.');},'primary'));
@@ -50,14 +51,14 @@ export function renderData(ctx:Context):HTMLElement{
     if(migration)notify(`Backup v0.3 convertido. ${migration.warnings.join(' ')}`);
     if(!confirmAction(`Substituir os dados atuais por ${parsed.chats.length} conversas, ${parsed.folders.length} pastas, ${parsed.prompts.length} prompts e ${parsed.queue.length} mensagens na fila? A execução diária será desativada.`))return;
     await restoreBackup(parsed);notify('Backup restaurado.');await ctx.refresh();
-  },'danger'));root.append(backup);
+  },'danger'));root.append(fold("Backup e restauração",backup));
   const danger=el('div','panel');danger.append(el('h3','section-heading','Limpar biblioteca'));
   danger.append(el('p','hint','Exclui conversas, prompts e mensagens enfileiradas apenas desta extensão neste navegador. Não remove conversas da sua conta. Faça backup antes.'));
   danger.append(action('Apagar todos os dados locais',async()=>{
     if(!confirmAction('CONFIRMAR: apagar todas as conversas, pastas, prompts, filas e regras IAPro deste navegador?'))return;
     if(!confirmAction('Última confirmação: não existe recuperação sem backup. Prosseguir?'))return;
     await saveSettings({...DEFAULT_SETTINGS});await clearAll();notify('Dados IAPro apagados.');await ctx.refresh();
-  },'danger'));root.append(danger);
+  },'danger'));root.append(fold("Limpar dados locais (atenção)",danger));
   root.append(el('p','fineprint','Sem conta IAPro, sem telemetria, sem cobrança ou backend. Independente: não afiliada à OpenAI ou ao Google. Captura só por ação explícita.'));
   return root;
 }

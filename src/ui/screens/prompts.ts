@@ -16,8 +16,7 @@ function filled(content:string):string|null{
 }
 export function renderPrompts(ctx:Context):HTMLElement{
   const root=el('section','screen');root.append(el('h2','screen-title','Prompts salvos'));
-  root.append(el('p','hint','Templates e mensagens preparadas para ChatGPT e Gemini. Nada é enviado automaticamente.'));
-  root.append(renderQueue());
+  root.append(el('p','hint','Reutilize modelos e prepare mensagens para ChatGPT ou Gemini. O envio continua sob seu controle.'));
   const form=el('form','panel');form.append(el('h3','section-heading','Editor de prompt'));
   const title=el('input');title.maxLength=100;title.required=true;title.placeholder='Ex.: Revisar código';
   const content=el('textarea');content.maxLength=20000;content.rows=5;content.required=true;content.placeholder='Escreva o prompt que deseja reutilizar…';
@@ -38,7 +37,7 @@ export function renderPrompts(ctx:Context):HTMLElement{
       await put('prompts',prompt);notify(editingId?'Prompt atualizado.':'Prompt salvo.');await ctx.refresh();
     })().catch(err=>notify(String(err),true));
   });
-  root.append(form);
+  const editor=el('details','disclosure');editor.append(el('summary','disclosure-trigger','+ Criar ou editar template'),form);
   const list=el('div','prompt-list');
   if(!ctx.prompts.length)list.append(empty('Nenhum prompt salvo ainda.'));
   for(const p of [...ctx.prompts].sort((a,b)=>b.createdAt-a.createdAt)){
@@ -49,9 +48,13 @@ export function renderPrompts(ctx:Context):HTMLElement{
       await navigator.clipboard.writeText(text);notify('Prompt copiado.');},'primary'));
     actions.append(action('Inserir na aba ativa',async()=>{const text=filled(p.content);if(text===null)return;
       await insertIntoActiveComposer(text);notify('Prompt inserido. Revise antes de enviar.');}));
-    actions.append(action('Editar',()=>{editingId=p.id;title.value=p.name;content.value=p.content;submit.textContent='Salvar alterações';title.focus();}));
+    actions.append(action('Editar',()=>{editor.open=true;editingId=p.id;title.value=p.name;content.value=p.content;submit.textContent='Salvar alterações';title.focus();}));
     actions.append(action('Remover',async()=>{if(!confirmAction(`Remover o prompt "${p.name}"?`))return;await remove('prompts',p.id);await ctx.refresh();},'danger'));
     entry.append(actions);list.append(entry);
   }
-  root.append(list);return root;
+  const label=el('h3','section-heading','Meus templates');
+  const queue=el('details','disclosure queue-disclosure');
+  const queueTitle=el('summary','disclosure-trigger','Fila de mensagens · preparar e revisar');
+  queue.append(queueTitle,renderQueue());
+  root.append(label,list,editor,queue);return root;
 }

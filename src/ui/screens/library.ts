@@ -4,6 +4,7 @@ import {PROVIDER_LABEL,type AIProvider} from '../../domain/providers.js';
 import {serializeChats,type ExportFormat} from '../../domain/exporter.js';
 import {el,action,empty,formatDate,safeOpen,confirmAction,notify,downloadText} from '../dom.js';
 import type {Context} from '../context.js';
+import {captureOpenConversation,captureCurrentSidebar} from '../../platform/capture.js';
 type Filter='active'|'all'|'pinned'|'archived';
 let filter:Filter='active';let query='';let folderFilter='all';let providerFilter:'all'|AIProvider='all';
 const normalize=(t:string)=>t.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR');
@@ -53,8 +54,11 @@ function card(chat:Chat,ctx:Context,selected:Set<string>,onSelection:()=>void):H
 }
 export function renderLibrary(ctx:Context):HTMLElement{
   const root=el('section','screen');root.append(el('h2','screen-title','Sua biblioteca'));
-  root.append(el('p','hint','ChatGPT e Gemini no mesmo lugar. Arquivar e mover são operações locais: não alteram as contas.'));
-  const toolbar=el('div','toolbar');const search=el('input','search');search.type='search';search.placeholder='Buscar título ou mensagens…';search.id='iapro-search';search.id='iapro-search';search.value=query;search.setAttribute('aria-label','Buscar conversas');
+  root.append(el('p','hint','Encontre o que importa, organize por assunto e retome qualquer conversa. Tudo na sua biblioteca local.'));
+  const captureActions=el('div','buttons quick-actions');
+  captureActions.append(action('Salvar conversa aberta',async()=>{await captureOpenConversation();notify('Conversa adicionada à biblioteca.');await ctx.refresh();},'primary'),action('Capturar lista visível',async()=>{const result=await captureCurrentSidebar();notify(`${result.count} conversa(s) do ${result.provider} adicionadas.`);await ctx.refresh();}));
+  root.append(captureActions);
+  const toolbar=el('div','toolbar');const search=el('input','search');search.type='search';search.placeholder='Buscar título ou mensagens…';search.id='iapro-search';search.value=query;search.setAttribute('aria-label','Buscar conversas');
   toolbar.append(search);
   const folder=el('select','filter-select');folder.setAttribute('aria-label','Filtrar pasta');folder.append(new Option('Todas as pastas','all'),new Option('Sem pasta','none'));
   for(const f of ctx.folders)folder.append(new Option(f.name,f.id));folder.value=folderFilter;toolbar.append(folder);
@@ -65,7 +69,7 @@ export function renderLibrary(ctx:Context):HTMLElement{
   const bulk=el('div','panel bulk-panel');const selectedCount=el('p','hint');
   const bulkActions=el('div','buttons');bulk.append(selectedCount,bulkActions);
   const getSelected=():Chat[]=>ctx.chats.filter(c=>selected.has(c.id));
-  const updateSelection=()=>{selectedCount.textContent=`${selected.size} selecionada(s) · limite de 100 por lote`;for(const b of bulkActions.querySelectorAll('button'))b.disabled=selected.size===0 || selected.size>100;};
+  const updateSelection=()=>{bulk.hidden=selected.size===0;selectedCount.textContent=`${selected.size} selecionada(s) · limite de 100 por lote`;for(const b of bulkActions.querySelectorAll('button'))b.disabled=selected.size===0 || selected.size>100;};
   async function applyBulk(patch:Parameters<typeof modifyChats>[1],label:string):Promise<void>{
     const ids=[...selected];if(!ids.length)throw Error('Selecione conversas.');
     if(!confirmAction(`${label} ${ids.length} conversa(s) somente na biblioteca IAPro?`))return;
@@ -96,7 +100,7 @@ export function renderLibrary(ctx:Context):HTMLElement{
     }).sort((a,b)=>(b.updatedAt??b.importedAt)-(a.updatedAt??a.importedAt));
     visibleRows=rows.slice(0,100);
     result.replaceChildren();
-    if(!rows.length)result.append(empty('Nenhuma conversa encontrada. Importe seu histórico ou capture a lista na aba Dados.'));
+    if(!rows.length)result.append(empty(ctx.chats.length?'Nenhuma conversa corresponde aos filtros.':'Sua biblioteca está vazia. Abra uma conversa no ChatGPT ou Gemini e clique em Salvar conversa aberta.'));
     else for(const c of visibleRows)result.append(card(c,ctx,selected,updateSelection));
     if(rows.length>100)result.append(el('p','hint',`Exibindo 100 de ${rows.length} resultados. Refine a busca.`));
   };
@@ -113,5 +117,6 @@ export function renderLibrary(ctx:Context):HTMLElement{
   });
   // Seleção é limpa ao mudar filtros; operações em lote nunca agem sobre itens ocultos.
   const clear=action('Limpar seleção',()=>{selected.clear();renderList();updateSelection();});
-  root.append(toolbar,provider,filters,pickVisible,clear,bulk,result);updateSelection();renderList();return root;
+  const selectRow=el('div','buttons selection-tools');selectRow.append(pickVisible,clear);
+  root.append(toolbar,provider,filters,selectRow,bulk,result);updateSelection();renderList();return root;
 }

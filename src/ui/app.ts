@@ -4,26 +4,38 @@ import {renderLibrary} from './screens/library.js';
 import {renderOrganize} from './screens/organize.js';
 import {renderPrompts} from './screens/prompts.js';
 import {renderData} from './screens/data.js';
+
 type Tab='library'|'organize'|'prompts'|'data';
-let tab:Tab='library';let busy=false;
+const TABS:readonly {id:Tab;label:string;icon:string}[]=[
+  {id:'library',label:'Biblioteca',icon:'▤'},
+  {id:'organize',label:'Organizar',icon:'▧'},
+  {id:'prompts',label:'Prompts',icon:'✎'},
+  {id:'data',label:'Dados',icon:'◫'}
+];
+let tab:Tab='library';let busy=false;let pending=false;
 const root=document.getElementById('root') ?? (()=>{throw Error('Elemento raiz ausente');})();
+
 async function refresh():Promise<void>{
-  if(busy)return;
+  if(busy){pending=true;return;}
   busy=true;
   try{
     const ctx:Context=await loadData(refresh);
-    const top=el('header','topbar');
-    const brand=el('div','branding');const mark=el('img','brand-mark');mark.src='assets/icon128.png';mark.alt='';mark.width=40;mark.height=40;mark.setAttribute('aria-hidden','true');
-    const titles=el('div');titles.append(el('strong','brand-title','Chat Maestro'),el('span','brand-subtitle','Seu espaço, sob controle.'));
-    brand.append(mark,titles);top.append(brand);
-    const statistics=el('div','statistics');
-    statistics.append(metric(ctx.chats.filter(c=>!c.archived).length,'Ativas'),metric(ctx.chats.filter(c=>c.archived).length,'Arquivadas'),metric(ctx.folders.length,'Pastas'));
-    const navigation=el('nav','navigation');navigation.setAttribute('aria-label','Seções');
-    for(const [id,name] of [['library','Biblioteca'],['organize','Organizar'],['prompts','Prompts'],['data','Dados']] as const){
-      const b=el('button',`nav-button ${tab===id?'current':''}`,name);b.type='button';b.setAttribute('aria-current',tab===id?'page':'false');
-      b.addEventListener('click',()=>{tab=id;void refresh();});navigation.append(b);
+    const shell=el('div','workspace-shell');
+    const top=el('header','workspace-header');
+    const brand=el('div','branding');
+    const logo=el('img','brand-logo');logo.src='assets/icon32.png';logo.width=32;logo.height=32;logo.alt='';
+    const titles=el('div','brand-copy');titles.append(el('strong','brand-title','Chat Maestro'),el('span','brand-subtitle','Organize suas conversas com IA'));
+    brand.append(logo,titles);top.append(brand);
+    const navigation=el('nav','navigation');navigation.setAttribute('aria-label','Navegação principal');
+    for(const {id,label,icon} of TABS){
+      const button=el('button',`nav-button${tab===id?' current':''}`);button.type='button';
+      button.append(el('span','nav-icon',icon),el('span','nav-text',label));
+      button.setAttribute('aria-current',tab===id?'page':'false');
+      button.setAttribute('aria-label',label);
+      button.addEventListener('click',()=>{if(tab===id)return;tab=id;void refresh();});
+      navigation.append(button);
     }
-    const main=el('main','main');
+    const main=el('main','main');main.id='main-content';
     switch(tab){
       case 'library':main.append(renderLibrary(ctx));break;
       case 'organize':main.append(renderOrganize(ctx));break;
@@ -31,17 +43,19 @@ async function refresh():Promise<void>{
       case 'data':main.append(renderData(ctx));break;
     }
     const toast=el('div','toast');toast.id='toast';toast.setAttribute('role','status');toast.setAttribute('aria-live','polite');
-    root.replaceChildren(top,statistics,navigation,main,toast);
+    shell.append(top,navigation,main,toast);root.replaceChildren(shell);
   }catch(err){
-    root.replaceChildren(el('div','fatal',`Não foi possível carregar o Chat Maestro: ${err instanceof Error?err.message:String(err)}`));
+    root.replaceChildren(el('div','fatal',`Falha ao abrir o Chat Maestro: ${err instanceof Error?err.message:String(err)}`));
     console.error(err);
-  }finally{busy=false;}
+  }finally{
+    busy=false;
+    if(pending){pending=false;void refresh();}
+  }
 }
-function metric(n:number,label:string):HTMLElement{const item=el('div','metric');item.append(el('strong','',String(n)),el('span','',label));return item;}
+
 document.addEventListener('keydown',event=>{
-  // Atalho local, restrito ao painel e sem capturar digitação em formulários.
   if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k'){
-    if(event.target instanceof HTMLElement && (event.target.isContentEditable || ['INPUT','TEXTAREA','SELECT'].includes(event.target.tagName)))return;
+    if(event.target instanceof HTMLElement && (event.target.isContentEditable||['INPUT','TEXTAREA','SELECT'].includes(event.target.tagName)))return;
     event.preventDefault();
     if(tab==='library')document.getElementById('iapro-search')?.focus();
     else{tab='library';void refresh().then(()=>document.getElementById('iapro-search')?.focus());}

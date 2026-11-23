@@ -22,3 +22,11 @@ Extensão independente de Chrome para ChatGPT e Gemini. Mantenha produto leve e 
 - Fonte oficial: `assets/brand/icon-source.png`, com mão segurando batuta sem estrela; banner em `assets/brand/readme-banner.png`. Não reconstruir a partir do SVG antigo ou reaplicar brilho mágico.
 - Após mexer na marca, regenerar PNGs com `scripts/generate-icons.py`, validar os quatro tamanhos, e revisar ícone e painel no navegador.
 - Não aumentar permissões ou dependências de runtime por alterações visuais.
+
+## Contrato de UX a partir de v0.4.0
+- Manter quatro módulos no painel estreito e navegação persistente durante scroll.
+- Biblioteca é entrada principal; ações em lote só após seleção, com confirmação.
+- Exibir templates antes da fila e formulários avançados somente sob demanda.
+- Não exigir URL quando a conversa puder ser detectada; ausência de contexto exige orientação, não erro alarmista.
+- Imagens geradas não são evidência de homologação; capturas oficiais devem vir de Chrome real.
+- Consulte docs/UX_REBUILD.md para as lacunas, prioridades e critérios de aceite.

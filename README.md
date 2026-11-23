@@ -21,13 +21,13 @@
 </p>
 
 <p align="center">
-  <img alt="Versão 0.3.4" src="https://img.shields.io/badge/vers%C3%A3o-0.3.4-222222">
+  <img alt="Versão 0.4.0" src="https://img.shields.io/badge/vers%C3%A3o-0.4.0-222222">
   <img alt="Chrome Manifest V3" src="https://img.shields.io/badge/Chrome-Manifest%20V3-246BCE">
   <img alt="Local-first" src="https://img.shields.io/badge/dados-local--first-14866D">
   <a href="https://github.com/IAPro-Community/chat-maestro/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/IAPro-Community/chat-maestro/actions/workflows/ci.yml/badge.svg"></a>
 </p>
 
-> **Prévia para desenvolvimento · v0.3.4.** A base já inclui biblioteca, organização local e fila de mensagens. A integração visual com sessões autenticadas de ChatGPT e Gemini ainda precisa de homologação. Não há publicação na Chrome Web Store nesta fase.
+> **Prévia para desenvolvimento · v0.4.0.** A base já inclui biblioteca, organização local e fila de mensagens. A integração visual com sessões autenticadas de ChatGPT e Gemini ainda precisa de homologação. Não há publicação na Chrome Web Store nesta fase.
 
 ## O problema não é conversar com IA. É encontrar a conversa depois.
 
@@ -122,13 +122,19 @@ npm run package
 
 O build local gera `release/chat-maestro-v<versao>-instalar.zip`. Para usuários finais, use o **download direto** acima.
 
+### Interface revisada na v0.4.0
+
+A navegação permanece visível durante a rolagem; a **Biblioteca** traz captura direta e ações de seleção contextual; **Prompts** dá prioridade aos modelos reutilizáveis e mantém fila/editor recolhidos; **Organizar** inicia pela prévia, deixando configurações detalhadas por demanda.
+
+**Ainda não é homologação do Chrome autenticado.** Arquivamento continua exclusivamente local e o envio da fila é manual. [Confira a comparação com a extensão original, os limites e os critérios de aceite](docs/UX_REBUILD.md). Imagens de interface geradas anteriormente são conceitos, **não capturas reais** do produto.
+
 ## Para onde vamos
 
 A ideia não é acrescentar dezenas de botões. É resolver melhor os poucos problemas que fazem diferença todo dia.
 
 | Etapa | Entrega que buscamos | Critério para considerar pronta |
 | --- | --- | --- |
-| **Agora · Base 0.3.4** | Biblioteca, pastas, prompts, fila manual e limpeza local | Build e testes automatizados; homologação de navegador ainda aberta |
+| **Agora · Base 0.4.0** | Biblioteca, pastas, prompts, fila manual e limpeza local | Build e testes automatizados; homologação de navegador ainda aberta |
 | **Próximo · Confiabilidade** | Testes reais em ChatGPT/Gemini, isolamento por conta, melhores diagnósticos | Nenhuma ação executada na conversa ou conta errada |
 | **Depois · Histórico em escala** | Busca indexada, paginação e importação mais robusta | Milhares de conversas sem travar a interface |
 | **Em estudo · Automação assistida** | Arquivamento na conta e envio sequencial opt-in | Evidência E2E, confirmação de cada ação, pausa e recuperação segura |

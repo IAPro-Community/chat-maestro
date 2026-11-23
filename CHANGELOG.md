@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.0 — Navegação e fila contextual (2026-11-22)
+
+- Layout compacto com navegação persistente e suporte ao tema escuro do navegador.
+- Biblioteca com captura pontual em destaque e operações em lote apenas após seleção.
+- Templates acima da fila; formulários de fila, edição e dados avançados recolhidos.
+- Fila contextual detecta a conversa aberta, oculta URL avançada e exibe orientação neutra quando não há destino.
+- Organização apresenta a prévia antes das configurações; corrigidos listener Ctrl/Cmd+K, ID de busca e exportação duplicados.
+- 66 testes de código aprovados localmente; homologação em Chrome real ainda pendente.
+- Arquivamento permanece local e envio da fila permanece manual.
+
+
 ## 0.3.4 — Maestro com batuta de regência, sem estrela (2026-11-22)
 
 - Identidade refinada: mão efetivamente segurando a batuta; removido o brilho em forma de estrela que confundia o maestro com um personagem mágico.
