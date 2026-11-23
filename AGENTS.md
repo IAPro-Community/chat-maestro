@@ -30,3 +30,11 @@ Extensão independente de Chrome para ChatGPT e Gemini. Mantenha produto leve e 
 - Não exigir URL quando a conversa puder ser detectada; ausência de contexto exige orientação, não erro alarmista.
 - Imagens geradas não são evidência de homologação; capturas oficiais devem vir de Chrome real.
 - Consulte docs/UX_REBUILD.md para as lacunas, prioridades e critérios de aceite.
+
+## Contrato de acesso do painel lateral (v0.4.1)
+
+- Não depender de activeTab para ações iniciadas dentro do side panel; use site-access.ts como ponto único para resolver a aba e verificar permissões.
+- chrome.permissions.request deve ser chamado no mesmo gesto de usuário que aciona o botão, sem await antes da solicitação.
+- Não ampliar as origens opcionais ou acrescentar permissions tabs sem ADR, revisão de privacidade e testes.
+- Permissão por domínio não significa autorização para sincronização silenciosa; captura e inserção continuam sob gesto do usuário.
+- Mensagens de erro devem diferenciar ausência de autorização, URL oculta, provedor diferente, conversa inicial e seletor DOM alterado.

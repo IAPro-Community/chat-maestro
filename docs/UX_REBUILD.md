@@ -43,3 +43,11 @@ O pacote original 8.5.7 fornecido como referência inclui um *conversation manag
 ## Limites de escopo
 
 Não reconstruir 30 recursos da referência em uma única etapa. Prioridade: biblioteca confiável → organização por projeto → fila contextual → busca e notas. Cada melhoria deve ter testes de domínio, comportamento visual e proteção de dados.
+
+## Feedback real após a v0.4: problema persistente (v0.4.1)
+
+A captura enviada do painel em Dados revelou falha de identificação de aba mesmo com ChatGPT visível à esquerda. A investigação do código encontrou dependência de activeTab, que não é garantida por gestos internos do side panel. A v0.4.1 troca esse contrato por autorização opcional por provedor, reutilizada por captura, fila e inserção.
+
+A UI também elimina parte do cabeçalho duplicado, compacta o painel e exibe estado de conexão dentro da Biblioteca. Estas mudanças ainda **não** constituem paridade visual nem funcional com a extensão original.
+
+Gate de homologação: autorização negada/aceita/revogada, captura em navegação SPA, abertura/fechamento do painel, dados locais intactos, dois provedores isolados, Chrome/Edge real, sem envio automático nem arquivo remoto.

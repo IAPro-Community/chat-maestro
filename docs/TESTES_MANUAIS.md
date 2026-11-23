@@ -1,4 +1,4 @@
-# Homologação manual v0.2.0
+# Homologação manual v0.4.1
 
 Marque cada caso antes da publicação. **Os testes automatizados não substituem estes cenários.**
 
@@ -16,7 +16,7 @@ Marque cada caso antes da publicação. **Os testes automatizados não substitue
 - [ ] Testar a função inserir com editor não encontrado: erro claro e sem alteração da página.
 - [ ] Fazer backup v2, restaurar, garantir ausência de IDs duplicados e preservar regra/flags.
 - [ ] Confirmar que capturas via DOM **não** ganham datas verificadas nem são arquivadas automaticamente por antiguidade.
-- [ ] Verificar permissões: sem host_permissions e sem content_scripts persistentes; apenas activeTab por gesto do usuário.
+- [ ] Verificar permissões: sem host_permissions e sem content_scripts persistentes; permissões opcionais exclusivamente nos domínios ChatGPT/Gemini, sem host_permissions obrigatórias.
 - [ ] Simular grande quantidade de conversas e registrar problemas de desempenho para P1.
 
 ## Fila v0.3.0
@@ -29,3 +29,15 @@ Marque cada caso antes da publicação. **Os testes automatizados não substitue
 - [ ] Recarregar página após preparar: mensagem permanece marcada como preparada.
 - [ ] Limpeza de dados locais remove a fila; nenhuma ação ocorre na conta do provedor.
 - [ ] Revisar prévia da limpeza e exportar seleção antes de aplicar.
+
+## P0 — Permissões e captura após v0.4.1
+
+- [ ] Antes de conectar: estando no ChatGPT, tentar Salvar conversa aberta e confirmar que a mensagem explica como conceder acesso, sem dizer incorretamente que o usuário está no site errado.
+- [ ] Na Biblioteca, clicar ChatGPT · conectar e aceitar a solicitação do Chrome; conferir chip conectado. Repetir separadamente com Gemini.
+- [ ] Testar captura no ChatGPT após navegar entre duas conversas sem reabrir o painel; confirmar títulos/URLs corretos e sem duplicação.
+- [ ] Abrir o painel antes de navegar para Gemini, navegar para uma conversa e capturar depois. A autorização deve persistir durante a sessão.
+- [ ] Negar permissão do Gemini, confirmar que ChatGPT e biblioteca local continuam funcionando.
+- [ ] Revogar permissão nas configurações do Chrome e confirmar erro explícito e não destrutivo.
+- [ ] Abrir página inicial sem ID de conversa e confirmar que não salva um ID inventado.
+- [ ] Testar o editor de prompts e fila com rascunho presente; nenhuma mensagem deve ser enviada automaticamente.
+- [ ] Conferir interface em 320, 400 e 520 px, nos temas claro e escuro; screenshots somente do navegador real.
