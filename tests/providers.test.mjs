@@ -53,3 +53,12 @@ test('merge mantém os dados locais de uma conversa Gemini',()=>{
   assert.equal(merged.title,'Novo título');assert.equal(merged.pinned,true);
   assert.equal(merged.folderId,'folder');assert.equal(merged.protected,true);
 });
+
+test('ChatGPT projeto possui caminho g/GPT/c e mantém identidade da conversa',()=>{
+ const project='https://chatgpt.com/g/g-p-abcdef123456789-project/c/01234567-89ab-cdef-0123-456789abcdef';
+ const ref=parseConversationUrl(project);
+ assert.equal(ref?.provider,'chatgpt');
+ assert.equal(ref?.nativeId,'01234567-89ab-cdef-0123-456789abcdef');
+ assert.equal(ref?.url,project);
+ assert.equal(parseConversationUrl('https://chatgpt.com/g/x/c/01234567-89ab-cdef-0123-456789abcdef'),null);
+});

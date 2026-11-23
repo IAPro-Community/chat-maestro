@@ -7,13 +7,16 @@ export function parseConversationUrl(input:string):ConversationRef|null {
   try {
     const u = new URL(input);
     if (u.protocol !== 'https:' || u.username || u.password || u.port) return null;
-    const match = u.pathname.match(/^\/(c|app)\/([a-zA-Z0-9_-]{6,128})\/?$/);
-    if (!match || !match[2] || !ID.test(match[2])) return null;
-    if ((u.hostname === 'chatgpt.com' || u.hostname === 'chat.openai.com') && match[1]==='c') {
-      return {provider:'chatgpt',nativeId:match[2],id:match[2],url:`https://chatgpt.com/c/${match[2]}`};
+    const simple=u.pathname.match(/^\/(c|app)\/([a-zA-Z0-9_-]{6,128})\/?$/);
+    const project=u.pathname.match(/^\/g\/([a-zA-Z0-9_-]{6,256})\/c\/([a-zA-Z0-9_-]{6,128})\/?$/);
+    if ((u.hostname==='chatgpt.com'||u.hostname==='chat.openai.com') && project && ID.test(project[2]!)){
+      return {provider:'chatgpt',nativeId:project[2]!,id:project[2]!,url:`https://chatgpt.com/g/${project[1]}/c/${project[2]}`};
     }
-    if (u.hostname === 'gemini.google.com' && match[1]==='app') {
-      return {provider:'gemini',nativeId:match[2],id:`gemini:${match[2]}`,url:`https://gemini.google.com/app/${match[2]}`};
+    if(simple && simple[2] && ID.test(simple[2]) && (u.hostname==='chatgpt.com'||u.hostname==='chat.openai.com') && simple[1]==='c'){
+      return {provider:'chatgpt',nativeId:simple[2],id:simple[2],url:`https://chatgpt.com/c/${simple[2]}`};
+    }
+    if(simple && simple[2] && ID.test(simple[2]) && u.hostname==='gemini.google.com' && simple[1]==='app'){
+      return {provider:'gemini',nativeId:simple[2],id:`gemini:${simple[2]}`,url:`https://gemini.google.com/app/${simple[2]}`};
     }
   } catch { /* entrada externa */ }
   return null;

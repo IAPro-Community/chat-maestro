@@ -14,9 +14,9 @@ export async function captureCurrentSidebar():Promise<{count:number;provider:str
       for(const link of document.querySelectorAll<HTMLAnchorElement>('nav a[href], aside a[href], a[href*="/app/"], a[href*="/c/"]')){
         try{
           const url=new URL(link.href,location.href);
-          const gpt=(url.hostname==='chatgpt.com'||url.hostname==='chat.openai.com')&&url.pathname.startsWith('/c/');
+          const gpt=(url.hostname==='chatgpt.com'||url.hostname==='chat.openai.com')&&(url.pathname.startsWith('/c/')||/^\/g\/[a-zA-Z0-9_-]{6,256}\/c\//.test(url.pathname));
           const gemini=url.hostname==='gemini.google.com'&&url.pathname.startsWith('/app/');
-          const id=url.pathname.match(/^\/(?:app|c)\/([a-zA-Z0-9_-]{6,128})\/?$/)?.[1];
+          const id=(url.pathname.match(/^\/(?:app|c)\/([a-zA-Z0-9_-]{6,128})\/?$/)||url.pathname.match(/^\/g\/[a-zA-Z0-9_-]{6,256}\/c\/([a-zA-Z0-9_-]{6,128})\/?$/))?.[1];
           if(!id || (!gpt&&!gemini) || seen.has(`${url.hostname}:${id}`))continue;
           const title=(link.getAttribute('aria-label')||link.textContent||'').trim().slice(0,250);
           if(!title)continue;
