@@ -60,3 +60,10 @@ Marque cada caso antes da publicação. **Os testes automatizados não substitue
 - [ ] Verificar foco, contraste, abertura/fechamento e ausência de conflito com compositor nas larguras 320/400/520px.
 - [ ] Confirmar mensagem de **identidade da conta não verificada**; não habilitar comandos remotos ou sincronização automática.
 - [ ] Registrar screenshots reais, navegador/versão, provedor, contexto, logs e resultado antes de marcar homologado.
+
+## P0 — Concorrência e regressão v0.5.1
+
+- [ ] Enquanto salvar/favoritar/mover estiver aguardando resposta, alternar para outra conversa: o destino antigo não deve receber alteração atrasada.
+- [ ] Enquanto a operação estiver aguardando, alternar para outra aba: o worker deve recusar a gravação local.
+- [ ] Revogar permissão após clicar e antes de executar: verificar falha fechada e ausência de gravação.
+- [ ] Em qualquer erro, confirmar se a operação foi concluída localmente antes de repetir; evitar operações duplicadas.

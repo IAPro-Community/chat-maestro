@@ -1,6 +1,6 @@
 # Instalar o Chat Maestro no Google Chrome
 
-> **Versão de desenvolvimento: 0.5.0.** O Chat Maestro ainda não está publicado na Chrome Web Store. A instalação é feita pelo modo de desenvolvedor, e a compatibilidade visual com sessões autenticadas de ChatGPT e Gemini ainda precisa de homologação.
+> **Versão de desenvolvimento: 0.5.1.** O Chat Maestro ainda não está publicado na Chrome Web Store. A instalação é feita pelo modo de desenvolvedor, e a compatibilidade visual com sessões autenticadas de ChatGPT e Gemini ainda precisa de homologação.
 
 ## Opção recomendada: instalar sem programar
 

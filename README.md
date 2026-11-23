@@ -21,13 +21,13 @@
 </p>
 
 <p align="center">
-  <img alt="Versão 0.5.0" src="https://img.shields.io/badge/vers%C3%A3o-0.5.0-222222">
+  <img alt="Versão 0.5.1" src="https://img.shields.io/badge/vers%C3%A3o-0.5.1-222222">
   <img alt="Chrome Manifest V3" src="https://img.shields.io/badge/Chrome-Manifest%20V3-246BCE">
   <img alt="Local-first" src="https://img.shields.io/badge/dados-local--first-14866D">
   <a href="https://github.com/IAPro-Community/chat-maestro/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/IAPro-Community/chat-maestro/actions/workflows/ci.yml/badge.svg"></a>
 </p>
 
-> **Prévia para desenvolvimento · v0.5.0.** A base inclui biblioteca, organização local, fila manual e integração in-page experimental. A integração visual com sessões autenticadas de ChatGPT e Gemini ainda precisa de homologação. Não há publicação na Chrome Web Store nesta fase.
+> **Prévia para desenvolvimento · v0.5.1.** A base inclui biblioteca, organização local, fila manual e integração in-page experimental. A integração visual com sessões autenticadas de ChatGPT e Gemini ainda precisa de homologação. Não há publicação na Chrome Web Store nesta fase.
 
 > **Direção de produto revista (novembro de 2026):** a extensão atual ainda é uma biblioteca local limitada e não entrega toda a experiência in-page, busca completa, arquivamento na conta ou fila automática que queremos. Leia a [auditoria e rebaseline do produto](docs/PRODUCT_REBASELINE_2026-11.md) e a [issue de execução](https://github.com/IAPro-Community/chat-maestro/issues/2). Não confunda recursos planejados com funcionalidades disponíveis.
 
@@ -133,19 +133,22 @@ npm run package
 
 O build local gera `release/chat-maestro-v<versao>-instalar.zip`. Para usuários finais, use o **download direto** acima.
 
-### Interface revisada na v0.5.0
+### Interface revisada na v0.5.1
 
 A navegação permanece visível durante a rolagem; a **Biblioteca** agora mostra conexão por provedor, captura direta e ações de seleção contextual; **Prompts** dá prioridade aos modelos reutilizáveis e mantém fila/editor recolhidos; **Organizar** inicia pela prévia, deixando configurações detalhadas por demanda.
 
-A v0.5.0 remove a dependência de `activeTab` temporário para operar dentro do painel lateral, substituída por permissão opcional e explícita por provedor. Para organizar em uma área maior, a **Biblioteca** oferece **Abrir gerenciador em tela cheia**, usando os mesmos dados locais — sem duplicar a aplicação. **Ainda não é homologação do Chrome autenticado.** Arquivamento continua exclusivamente local e o envio da fila é manual. [Confira a comparação com a extensão original, os limites e os critérios de aceite](docs/UX_REBUILD.md). Imagens de interface geradas anteriormente são conceitos, **não capturas reais** do produto.
+A v0.5.1 remove a dependência de `activeTab` temporário para operar dentro do painel lateral, substituída por permissão opcional e explícita por provedor. Para organizar em uma área maior, a **Biblioteca** oferece **Abrir gerenciador em tela cheia**, usando os mesmos dados locais — sem duplicar a aplicação. **Ainda não é homologação do Chrome autenticado.** Arquivamento continua exclusivamente local e o envio da fila é manual. [Confira a comparação com a extensão original, os limites e os critérios de aceite](docs/UX_REBUILD.md). Imagens de interface geradas anteriormente são conceitos, **não capturas reais** do produto.
 
 ## Para onde vamos
+
+A revisão de segurança 0.5.1 adicionou nova checagem da aba ativa antes de alterações locais. Veja o [relatório de QA de 23/11/2026](docs/QA_2026-11-23.md), com evidências, limitações e cenários que ainda bloqueiam a homologação.
+
 
 A ideia não é acrescentar dezenas de botões. É resolver melhor os poucos problemas que fazem diferença todo dia.
 
 | Etapa | Entrega que buscamos | Critério para considerar pronta |
 | --- | --- | --- |
-| **Agora · Base 0.5.0** | Biblioteca, pastas, prompts, fila manual e limpeza local | Build e testes automatizados; homologação de navegador ainda aberta |
+| **Agora · Base 0.5.1** | Biblioteca, pastas, prompts, fila manual e limpeza local | Build e testes automatizados; homologação de navegador ainda aberta |
 | **Próximo · Confiabilidade** | Testes reais em ChatGPT/Gemini, isolamento por conta, melhores diagnósticos | Nenhuma ação executada na conversa ou conta errada |
 | **Depois · Histórico em escala** | Busca indexada, paginação e importação mais robusta | Milhares de conversas sem travar a interface |
 | **Em estudo · Automação assistida** | Arquivamento na conta e envio sequencial opt-in | Evidência E2E, confirmação de cada ação, pausa e recuperação segura |
