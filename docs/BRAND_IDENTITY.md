@@ -1,27 +1,31 @@
 # Identidade visual — Chat Maestro
 
-## Origem e fidelidade
+## Conceito aprovado
 
-O ícone oficial do **Chat Maestro** é uma versão otimizada **diretamente da arte conceitual aprovada**: balão/maestro, gravata-borboleta, batuta branca, movimento curvo em vermelho-bordô e estrela. Não é um SVG redesenhado por aproximação.
+A marca do Chat Maestro utiliza **um personagem em forma de balão de conversa atuando como maestro**: rosto minimalista com dois olhos, gravata-borboleta e **mão segurando uma batuta de regência**. O movimento do chapéu/arco em vermelho expressa organização e direção.
 
-A fonte versionada é `assets/brand/icon-source.png` (256 × 256 px). Os PNGs em `assets/icon16.png`, `icon32.png`, `icon48.png` e `icon128.png` são artefatos prontos para instalação. O ícone de 16 px é uma redução deliberada: detalhes finos podem se fundir, porém a silhueta e o contraste permanecem.
+A batuta tem **ponta simples, sem estrela**. Uma estrela, faísca ou brilho na ponta faz a batuta parecer uma varinha mágica e não deve ser reintroduzida. Não há robô tridimensional, efeito neon ou ícones de circuitos.
 
-## Arquivos e integrações
+A identidade é raster baseada em uma arte gerada e tratada para uso na extensão. **Não há vetor nativo correspondente aprovado**. Não afirmar que esses PNGs são SVG ou arte integralmente vetorial.
 
-| Arquivo | Uso |
+## Fonte e derivados
+
+| Caminho | Função |
 | --- | --- |
-| `assets/brand/icon-source.png` | Fonte raster canônica para evolução dos ícones |
-| `assets/brand/readme-banner.png` | Logotipo horizontal aprovado, otimizado para o README |
-| `assets/icon16.png` | Barra de ferramentas / ação Chrome |
-| `assets/icon32.png` | Interface / ação Chrome e favicon do painel |
+| `assets/brand/icon-source.png` | Mascote transparente canônico, 256 × 256 px |
+| `assets/brand/readme-banner.png` | Logotipo com assinatura horizontal para o GitHub, 750 × 225 px |
+| `assets/icon16.png` | Ícone da barra do navegador |
+| `assets/icon32.png` | Ícone de ação e favicon do painel |
 | `assets/icon48.png` | Gerenciador de extensões |
-| `assets/icon128.png` | Manifest V3, painel lateral e README |
+| `assets/icon128.png` | Ícone de instalação e identidade no painel |
 
-O `manifest.json` declara tanto `icons` quanto `action.default_icon`. O painel carrega `icon128.png`. O script `scripts/assets.mjs` distribui apenas os arquivos necessários no `dist/`.
+Os ícones seguem fundo grafite `#130C1C`, branco e vermelho-bordô como destaque. O PNG de 16 px privilegia o reconhecimento geral do contorno; os detalhes da mão não precisam ser perfeitamente legíveis nessa escala.
 
-## Regenerar
+O `manifest.json` usa os caminhos acima em `icons` e `action.default_icon`. O `src/ui/app.ts` usa `assets/icon128.png` no cabeçalho; o `panel.html` usa `assets/icon32.png` como favicon. O `scripts/assets.mjs` leva apenas os ícones necessários ao pacote MV3. O banner do README e a fonte transparente não entram no ZIP distribuído.
 
-O projeto não depende de bibliotecas gráficas no runtime. Para regenerar os PNGs somente se a fonte for alterada:
+## Regeneração dos ícones
+
+A fonte do mascote é versionada. Use o gerador somente quando alterar os ícones — ele não é parte do build de produção e não adiciona dependências ao runtime:
 
 ```bash
 python -m pip install "Pillow>=11,<13"
@@ -29,15 +33,15 @@ python scripts/generate-icons.py
 npm run package
 ```
 
-O SVG anterior foi retirado intencionalmente porque divergia da identidade aprovada. Não o reutilize, mesmo que pareça mais conveniente trabalhar com vetor.
+O gerador compõe um fundo grafite com cantos arredondados, aplica o enquadramento e exporta 16, 32, 48 e 128 px. **Ao mudar a fonte ou o gerador, atualize os hashes em `tests/brand.test.mjs` conscientemente**, após revisão visual. Não substitua imagens com uma reconstrução vetorial aproximada.
 
-## Critérios de aceitação
+## Validação e restrições
 
-- Verificar tamanhos e integridade PNG automaticamente (`tests/brand.test.mjs`).
-- Usar imagens locais empacotadas e não links de terceiros.
-- Sem permissões adicionais, código remoto ou recursos de marca externos.
-- Revisar visualmente os ícones em 16/32/48/128 px em Chrome real, em temas claro e escuro.
-- Imagens ilustrativas não devem ser descritas como capturas reais da extensão.
-- A marca não é associada oficialmente a OpenAI ou Google.
+- Conferir dimensões e hashes dos PNGs com `npm test`, e gerar o ZIP com `npm run package`.
+- Verificar a barra de ferramentas, gerenciador, favicon e painel lateral em Chrome real, com temas claro e escuro.
+- Não aumentar permissões do Manifest V3, nem incorporar links externos de imagens ou código remoto.
+- Não tratar ilustrações de marca como screenshots da extensão em funcionamento.
+- Não afirmar publicação na Chrome Web Store sem homologação e envio reais.
+- A marca não representa afiliação oficial à OpenAI ou ao Google.
 
-> A fonte original em alta resolução da arte conceitual permanece no histórico de criação; o arquivo versionado de 256 px é a referência operacional do projeto.
+**Limitação:** a fonte operacional é um PNG de 256 px, não um arquivo vetorial escalável. Para aplicações impressas ou formatos muito maiores, será necessário preparar um vetor revisado especificamente a partir desta identidade.

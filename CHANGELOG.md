@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.4 — Maestro com batuta de regência, sem estrela (2026-11-22)
+
+- Identidade refinada: mão efetivamente segurando a batuta; removido o brilho em forma de estrela que confundia o maestro com um personagem mágico.
+- Atualizadas as imagens do manifesto Chrome (16/32/48/128 px), o cabeçalho do painel e o banner do README a partir da mesma fonte gráfica.
+- Fonte transparente versionada em 256 px, paleta mais consistente e gerador de ícones atualizado com composição de fundo para tamanhos pequenos.
+- Teste de dimensões e hashes dos arquivos garante que todos os pontos de uso permaneçam sincronizados.
+- Sem ampliação de permissões ou mudanças no banco, na captura ou no envio de mensagens.
+- Homologação visual/funcional em navegador autenticado e publicação na Chrome Web Store continuam pendentes.
+
 ## 0.3.3 — Marca fiel ao conceito aprovado (2026-11-22)
 
 - Substituídos os ícones vetoriais interpretativos por PNGs derivados diretamente da arte aprovada do Chat Maestro.
