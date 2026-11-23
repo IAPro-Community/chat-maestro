@@ -45,21 +45,23 @@ const save=document.createElement('button');save.textContent='Salvar esta conver
 const favorite=document.createElement('button');favorite.textContent='☆ Favoritar localmente';
 const folder=document.createElement('select');folder.setAttribute('aria-label','Mover conversa para pasta local');
 folder.append(new Option('Pasta local: nenhuma',''));
+const mark=document.createElement('button');mark.textContent='Salvar trecho selecionado / nota';
 const manager=document.createElement('button');manager.textContent='Abrir biblioteca';
-actions.append(save,favorite,folder,manager);
+actions.append(save,favorite,folder,mark,manager);
 const notice=document.createElement('div');notice.className='notice';notice.textContent='Escolha explicitamente um perfil local. Isso não comprova qual conta está autenticada no site. Sem arquivo remoto nem envio automático.';
 panel.append(top,status,actions,notice);
 shadow.append(style,launcher,panel);document.documentElement.append(host);
 let lastHref='';
+let selectedQuote='';
 let sequence=0;
 const context=()=>parseConversationUrl(location.href);
 const describe=()=>{
- const ref=context();const enabled=!!ref && !!profilePicker.value;save.disabled=!enabled;favorite.disabled=!enabled;folder.disabled=!enabled;
+ const ref=context();const enabled=!!ref && !!profilePicker.value;save.disabled=!enabled;favorite.disabled=!enabled;folder.disabled=!enabled;mark.disabled=!enabled;
  return ref?('Conversa detectada no '+(ref.provider==='chatgpt'?'ChatGPT':'Gemini')+'.'):('Abra uma conversa específica para salvar ou favoritar.');
 };
-async function send(action:InlineAction,folderId?:string|null):Promise<InlineResult>{
+async function send(action:InlineAction,folderId?:string|null,quote='',note=''):Promise<InlineResult>{
  const title=adapter?.title(document)||document.title.slice(0,250);
- return chrome.runtime.sendMessage<InlineResult>({type:INLINE_MESSAGE,action,href:location.href,title,...(action==='move'?{folderId:folderId??null}:{}),...(!['profiles','manager'].includes(action)?{profileId:profilePicker.value}:{})});
+ return chrome.runtime.sendMessage<InlineResult>({type:INLINE_MESSAGE,action,href:location.href,title,...(action==='move'?{folderId:folderId??null}:{}),...(action==='bookmark'?{quote,note}:{}),...(!['profiles','manager'].includes(action)?{profileId:profilePicker.value}:{})});
 }
 async function refreshProfiles():Promise<void>{
  const result=await send('profiles');
@@ -89,21 +91,27 @@ async function update():Promise<void>{
    }else status.textContent=response.error||'Não foi possível consultar a biblioteca.';
  }catch{if(generation===sequence)status.textContent='Conexão com a extensão indisponível. Recarregue a página.';}
 }
-async function run(action:InlineAction,folderId?:string|null):Promise<void>{
+async function run(action:InlineAction,folderId?:string|null,quote='',note=''):Promise<void>{
  status.textContent='Executando…';
  try{
- const response=await send(action,folderId);
+ const response=await send(action,folderId,quote,note);
  if(!response.ok){status.textContent=response.error||'Operação não concluída.';return;}
  if(action==='manager'){panel.classList.remove('open');return;}
- await update();status.textContent=action==='save'?'Conversa salva localmente.':action==='favorite'?'Favorito local atualizado.':action==='move'?'Pasta local atualizada.':'Pronto';
+ await update();status.textContent=action==='save'?'Conversa salva localmente.':action==='favorite'?'Favorito local atualizado.':action==='move'?'Pasta local atualizada.':action==='bookmark'?'Trecho ou nota salvo no perfil local.':'Pronto';
  }catch(e){status.textContent=e instanceof Error?e.message:'Falha ao comunicar com a extensão.';}
 }
-launcher.addEventListener('click',()=>{const open=!panel.classList.contains('open');panel.classList.toggle('open',open);launcher.setAttribute('aria-expanded',String(open));if(open)void update();});
+launcher.addEventListener('click',()=>{selectedQuote=window.getSelection()?.toString().trim().slice(0,3000)??'';const open=!panel.classList.contains('open');panel.classList.toggle('open',open);launcher.setAttribute('aria-expanded',String(open));if(open)void update();});
 close.addEventListener('click',()=>{panel.classList.remove('open');launcher.setAttribute('aria-expanded','false');});
 save.addEventListener('click',()=>{void run('save');});
 favorite.addEventListener('click',()=>{void run('favorite');});
 profilePicker.addEventListener('change',()=>{void update();});
 folder.addEventListener('change',()=>{void run('move',folder.value||null);});
+mark.addEventListener('click',()=>{
+ const text=window.prompt('Anotação para o trecho selecionado (opcional):','');
+ if(text===null)return;
+ if(!selectedQuote&&!text.trim()){status.textContent='Selecione um trecho da conversa ou escreva uma nota.';return;}
+ void run('bookmark',undefined,selectedQuote,text.slice(0,4000));
+});
 manager.addEventListener('click',()=>{void run('manager');});
 function sync(){
  if(!host.isConnected)document.documentElement.append(host);

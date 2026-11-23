@@ -76,18 +76,18 @@ export async function all<T>(name:StoreName,scopeId:string=activeScope()):Promis
 export async function one<T>(name:StoreName,id:string,scopeId:string=activeScope()):Promise<T|undefined>{
   const db=await openDB(scopeId);return requestValue<T|undefined>(db.transaction(name,'readonly').objectStore(name).get(id));
 }
-export async function put<T extends {id:string}>(name:StoreName,item:T):Promise<void>{
+export async function put<T extends {id:string}>(name:StoreName,item:T,scopeId:string=activeScope()):Promise<void>{
   if(name==='bookmarks'){
     const b=bookmark(item as unknown as Bookmark);
-    const saved=await one<Chat>('chats',b.chatId);
+    const saved=await one<Chat>('chats',b.chatId,scopeId);
     if(!saved||saved.provider!==b.provider)throw Error('Nota não pertence à conversa do perfil atual.');
   }
   if(name==='chains')chain(item as unknown as PromptChain);
-  if(name==='chats'&&activeScope()!==LEGACY_SCOPE){
-    const p=await requireProfile(activeScope());
+  if(name==='chats'&&scopeId!==LEGACY_SCOPE){
+    const p=await requireProfile(scopeId);
     if((item as unknown as Chat).provider!==p.provider)throw Error('Conversa pertence a outro provedor; selecione o perfil correto.');
   }
-  const db=await openDB();const tx=db.transaction(name,'readwrite');const done=txDone(tx);tx.objectStore(name).put(item);await done;
+  const db=await openDB(scopeId);const tx=db.transaction(name,'readwrite');const done=txDone(tx);tx.objectStore(name).put(item);await done;
 }
 export async function remove(name:StoreName,id:string):Promise<void>{
   const db=await openDB();

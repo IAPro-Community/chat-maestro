@@ -5,6 +5,7 @@ import {hasSiteAccess} from './platform/site-access.js';
 import {reconcileInlineScripts} from './platform/inline-registration.js';
 import {isCurrentInlineTab} from './platform/inline-guard.js';
 import {listProfiles,requireProfile} from './platform/profiles.js';
+import {saveBookmark} from './platform/bookmarks.js';
 import {loadSettings,reconcileAlarm,ALARM} from './platform/settings.js';
 import {all,applyPlan} from './platform/db.js';
 
@@ -56,13 +57,14 @@ chrome.runtime.onMessage.addListener((raw,sender,reply)=>{
       const folders=(await all<Folder>('folders',scope)).slice(0,200).map(f=>({id:f.id,name:f.name}));
       return {ok:true,accountVerified:false,provider:ref.provider,conversation:ref.id,saved:!!existing,pinned:!!existing?.pinned,folderId:existing?.folderId??null,folders};
     }
-    if(request.action==='save' || request.action==='favorite' || request.action==='move'){
+    if(request.action==='save' || request.action==='favorite' || request.action==='move' || request.action==='bookmark'){
       if(request.action==='move' && request.folderId && !(await one<Folder>('folders',request.folderId,scope)))return {ok:false,accountVerified:false,error:'A pasta selecionada não existe mais. Abra o gerenciador e atualize.'};
       if(!await isCurrentInlineTab(sender.url,sender.tab.id,request.href))return {ok:false,accountVerified:false,error:'A aba ou conversa mudou enquanto você executava a ação. Nenhuma alteração foi aplicada.'};
       if(!await hasSiteAccess(ctx.provider))return {ok:false,accountVerified:false,error:'Permissão revogada durante a ação. Nenhuma alteração foi aplicada.'};
       if(!existing)await importChats([parseManualConversation(ref.url,request.title?.trim()||'Conversa sem título')],undefined,scope);
       if(request.action==='favorite')await modifyChat(ref.id,{pinned:!existing?.pinned},scope);
       if(request.action==='move')await modifyChat(ref.id,{folderId:request.folderId??null},scope);
+      if(request.action==='bookmark')await saveBookmark(ref.id,request.quote??'',request.note??'',undefined,scope);
       const chat=await one<Chat>('chats',ref.id,scope);
       return {ok:true,accountVerified:false,provider:ref.provider,conversation:ref.id,saved:!!chat,pinned:!!chat?.pinned,folderId:chat?.folderId??null};
     }
