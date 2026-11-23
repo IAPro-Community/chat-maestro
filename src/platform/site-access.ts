@@ -28,3 +28,11 @@ export function captureAccessError(error:unknown,provider:AIProvider):Error{
   }
   return new Error('Não foi possível ler a página do '+PROVIDER_LABEL[provider]+': '+message);
 }
+
+/** Injeta na aba já aberta após autorização. Registro dinâmico cobre novas navegações. */
+export async function activateInlineForCurrentTab(provider:AIProvider):Promise<void>{
+  const [tab]=await chrome.tabs.query({active:true,lastFocusedWindow:true});
+  if(!tab?.id||!tab.url||providerFromPage(tab.url)!==provider)return;
+  if(!await hasSiteAccess(provider))return;
+  await chrome.scripting.executeScript({target:{tabId:tab.id},files:['content/inpage.js']});
+}

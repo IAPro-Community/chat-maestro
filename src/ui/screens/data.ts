@@ -1,6 +1,6 @@
 import type {Context} from '../context.js';
 import {captureCurrentSidebar,captureOpenConversation} from '../../platform/capture.js';
-import {hasSiteAccess,requestSiteAccess} from '../../platform/site-access.js';
+import {hasSiteAccess,requestSiteAccess,activateInlineForCurrentTab} from '../../platform/site-access.js';
 import {PROVIDER_LABEL} from '../../domain/providers.js';
 import {importChats,clearAll} from '../../platform/db.js';
 import {parseExport} from '../../domain/importer.js';
@@ -29,7 +29,8 @@ export function renderData(ctx:Context):HTMLElement{
       // Solicita permissão diretamente durante o clique, sem await anterior.
       return requestSiteAccess(provider).then(async granted=>{
         if(!granted)throw Error('Permissão para '+PROVIDER_LABEL[provider]+' não concedida. A biblioteca local continua disponível.');
-        notify(PROVIDER_LABEL[provider]+' conectado. Agora você pode capturar conversas.');
+        await activateInlineForCurrentTab(provider).catch(()=>{ /* eventual aba sem permissão de injeção: próximo reload ativa pelo registro dinâmico */ });
+        notify(PROVIDER_LABEL[provider]+' conectado. Ações na página disponíveis na próxima navegação.');
         await ctx.refresh();
       });
     }));

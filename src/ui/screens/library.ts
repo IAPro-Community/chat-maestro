@@ -5,7 +5,7 @@ import {serializeChats,type ExportFormat} from '../../domain/exporter.js';
 import {el,action,empty,formatDate,safeOpen,confirmAction,notify,downloadText} from '../dom.js';
 import type {Context} from '../context.js';
 import {captureOpenConversation,captureCurrentSidebar} from '../../platform/capture.js';
-import {hasSiteAccess,requestSiteAccess} from '../../platform/site-access.js';
+import {hasSiteAccess,requestSiteAccess,activateInlineForCurrentTab} from '../../platform/site-access.js';
 type Filter='active'|'all'|'pinned'|'archived';
 let filter:Filter='active';let query='';let folderFilter='all';let providerFilter:'all'|AIProvider='all';
 const normalize=(t:string)=>t.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR');
@@ -73,7 +73,8 @@ export function renderLibrary(ctx:Context):HTMLElement{
     const connect=action(label+' · conectar',()=>{
       return requestSiteAccess(provider).then(async accepted=>{
         if(!accepted)throw Error('Acesso ao '+label+' não autorizado. Você ainda pode usar os dados locais.');
-        notify(label+' conectado. A captura está disponível.');
+        await activateInlineForCurrentTab(provider).catch(()=>{ /* conteúdo injetado na próxima navegação quando esta aba não for acessível */ });
+        notify(label+' conectado. Abra a conversa para usar o botão Maestro.');
         await ctx.refresh();
       });
     });
