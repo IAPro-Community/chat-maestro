@@ -6,6 +6,7 @@ import {structurePrompt} from '../../domain/prompt-coach.js';
 import {insertIntoActiveComposer} from '../../platform/composer.js';
 import {el,action,field,empty,notify,confirmAction} from '../dom.js';
 import {renderQueue} from './queue.js';
+import {listChains,createChain,moveChain,deleteChain} from '../../platform/chains.js';
 function filled(content:string):string|null{
   const values:Record<string,string>={};
   for(const key of variables(content)){
@@ -56,5 +57,41 @@ export function renderPrompts(ctx:Context):HTMLElement{
   const queue=el('details','disclosure queue-disclosure');
   const queueTitle=el('summary','disclosure-trigger','Fila de mensagens · preparar e revisar');
   queue.append(queueTitle,renderQueue());
-  root.append(label,list,editor,queue);return root;
+
+  const chainView=el('details','disclosure');
+  chainView.append(el('summary','disclosure-trigger','Sequências de prompts · execução manual'));
+  const chainContent=el('div','panel');
+  chainContent.append(el('p','hint','Cada etapa é preparada individualmente; confirme o envio antes de avançar. Sem envio automático ou acesso a APIs privadas.'));
+  const chainName=el('input');chainName.maxLength=100;chainName.placeholder='Nome da sequência';
+  const chainSteps=el('textarea');chainSteps.rows=6;chainSteps.placeholder='Primeira etapa\n---\nSegunda etapa\n---\nTerceira etapa';
+  chainContent.append(field('Nome',chainName),field('Etapas (separadas por linha ---)',chainSteps));
+  chainContent.append(action('Criar sequência',async()=>{
+    const steps=chainSteps.value.split(/\n---\n/g).map(x=>x.trim()).filter(Boolean);
+    await createChain(chainName.value,steps);chainName.value='';chainSteps.value='';notify('Sequência criada.');await ctx.refresh();
+  },'primary'));
+  const chainList=el('div','prompt-list');chainContent.append(chainList);chainView.append(chainContent);
+  void listChains().then(chains=>{
+    chainList.replaceChildren();
+    if(!chains.length){chainList.append(empty('Ainda não há sequências.'));return;}
+    for(const item of chains){
+      const block=el('article','prompt-card');
+      block.append(el('h3','',item.name));
+      block.append(el('p','hint',`Etapa ${Math.min(item.cursor+1,item.steps.length)} de ${item.steps.length} · ${item.paused?'Pausada':item.cursor===item.steps.length?'Concluída':'Aguardando execução manual'}`));
+      if(item.cursor<item.steps.length)block.append(el('pre','prompt-preview',item.steps[item.cursor]!.slice(0,1000)));
+      const controls=el('div','buttons');
+      if(item.cursor<item.steps.length){
+        controls.append(action('Copiar etapa',async()=>{await navigator.clipboard.writeText(item.steps[item.cursor]!);notify('Etapa copiada.');},'primary'));
+        controls.append(action('Preparar no compositor',async()=>{await insertIntoActiveComposer(item.steps[item.cursor]!);notify('Etapa preparada. Envie manualmente.');}));
+        controls.append(action('Confirmar envio e avançar',async()=>{
+          if(!confirmAction('Você enviou esta etapa manualmente na conversa correta?'))return;
+          await moveChain(item.id,'advance');await ctx.refresh();
+        }));
+        controls.append(action(item.paused?'Retomar':'Pausar',async()=>{await moveChain(item.id,item.paused?'resume':'pause');await ctx.refresh();}));
+      }
+      controls.append(action('Reiniciar',async()=>{if(!confirmAction('Reiniciar esta sequência desde a primeira etapa?'))return;await moveChain(item.id,'reset');await ctx.refresh();}));
+      controls.append(action('Excluir',async()=>{if(!confirmAction('Remover a sequência?'))return;await deleteChain(item.id);await ctx.refresh();},'danger'));
+      block.append(controls);chainList.append(block);
+    }
+  }).catch(err=>chainList.replaceChildren(empty('Não foi possível carregar as sequências: '+String(err))));
+  root.append(label,list,editor,queue,chainView);return root;
 }

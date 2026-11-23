@@ -8,6 +8,7 @@ import type {Context} from '../context.js';
 import {captureOpenConversation,captureCurrentSidebar} from '../../platform/capture.js';
 import {hasSiteAccess,requestSiteAccess,activateInlineForCurrentTab} from '../../platform/site-access.js';
 import {activeScope,LEGACY_SCOPE,findProfile} from '../../platform/profiles.js';
+import {saveBookmark,removeBookmark} from '../../platform/bookmarks.js';
 type Filter='active'|'all'|'pinned'|'archived';
 let filter:Filter='active';let query='';let folderFilter='all';let providerFilter:'all'|AIProvider='all';
 const normalize=(t:string)=>t.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR');
@@ -50,12 +51,35 @@ function card(chat:Chat,ctx:Context,selected:Set<string>,onSelection:()=>void):H
   if(chat.messages.length){
     const details=el('details','messages');const summary=el('summary','',`Ler ${chat.messages.length} mensagens importadas`);details.append(summary);
     const container=el('div','message-list');
-    for(const m of chat.messages.slice(0,80)){
+    for(const [i,m] of chat.messages.slice(0,80).entries()){
       const block=el('section','message');block.append(el('strong','',m.role==='user'?'Você':'Assistente'));
-      const p=el('p','message-body',m.text.slice(0,3000));block.append(p);container.append(block);
+      const p=el('p','message-body',m.text.slice(0,3000));block.append(p);
+      block.append(action('Destacar / anotar esta mensagem',async()=>{
+        const note=window.prompt('Anotação opcional sobre esta mensagem:','');
+        if(note===null)return;
+        await saveBookmark(chat.id,m.text.slice(0,1500),note,i);
+        notify('Destaque salvo localmente.');await ctx.refresh();
+      }));
+      container.append(block);
     }
     if(chat.messages.length>80)container.append(el('p','hint','Prévia limitada a 80 mensagens. O backup preserva todas as importadas.'));
     details.append(container);item.append(details);
+  }
+  const marks=ctx.bookmarks.filter(x=>x.chatId===chat.id);
+  if(marks.length){
+    const notes=el('details','messages');
+    notes.append(el('summary','','Notas e destaques · '+marks.length));
+    const content=el('div','message-list');
+    for(const entry of marks.slice(0,60)){
+      const block=el('div','message');
+      if(entry.quote)block.append(el('p','message-body','“'+entry.quote.slice(0,500)+'”'));
+      if(entry.note)block.append(el('p','message-body','Nota: '+entry.note));
+      block.append(action('Remover destaque',async()=>{
+        if(!confirmAction('Remover somente esta anotação local?'))return;
+        await removeBookmark(entry.id);await ctx.refresh();
+      },'danger'));content.append(block);
+    }
+    notes.append(content);item.append(notes);
   }
   return item;
 }
