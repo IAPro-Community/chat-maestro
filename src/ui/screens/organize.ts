@@ -8,6 +8,7 @@ import {saveSettings,loadSettings} from '../../platform/settings.js';
 import {el,action,field,empty,buttonRow,notify,confirmAction,downloadText} from '../dom.js';
 import {serializeChats} from '../../domain/exporter.js';
 import {activeScope,LEGACY_SCOPE} from '../../platform/profiles.js';
+import {loadArchiveReview,startArchiveReview,reviewAction} from '../../platform/archive-review.js';
 export function renderOrganize(ctx:Context):HTMLElement{
   const root=el('section','screen');root.append(el('h2','screen-title','Organização inteligente'));
   root.append(el('p','hint','Organize localmente conversas do ChatGPT e Gemini com as mesmas regras. Você revisa antes de aplicar.'));
@@ -100,13 +101,39 @@ export function renderOrganize(ctx:Context):HTMLElement{
     if(!confirmAction('Desfazer o último lote?'))return;
     const n=await undoLast();notify(`${n} alterações desfeitas.`);await ctx.refresh();
   }));root.append(preview);
+  const guided=el('details','disclosure');
+  guided.append(el('summary','disclosure-trigger','Arquivamento na conta · revisão assistida'));
+  const guidedContent=el('div','panel');
+  guidedContent.append(el('p','hint','Este fluxo abre cada conversa para você arquivar pelo menu nativo. O Chat Maestro NÃO arquiva automaticamente na conta e não verifica a operação remotamente.'));
+  guidedContent.append(action('Preparar revisão de conversas antigas',async()=>{
+    if(!confirmAction('Criar lista de revisão a partir da prévia atual? Esta ação não altera as contas.'))return;
+    await startArchiveReview(plan,ctx.chats);notify('Revisão preparada.');await ctx.refresh();
+  }));
+  const guidedList=el('div','recommendations');guidedContent.append(guidedList);guided.append(guidedContent);
+  void loadArchiveReview().then(review=>{
+    if(!review){guidedList.append(empty('Nenhuma revisão assistida em andamento.'));return;}
+    const remaining=review.tasks.filter(t=>t.state!=='reported'&&t.state!=='skipped');
+    if(!remaining.length){guidedList.append(empty('Revisão concluída conforme as confirmações manuais.'));return;}
+    for(const task of remaining.slice(0,100)){
+      const row=el('div','recommendation');
+      row.append(el('div','',task.title+' · '+(task.state==='opened'?'Aberta para revisão':'Pendente')));
+      const buttons=el('div','buttons');
+      buttons.append(action('Abrir conversa',async()=>{await reviewAction(task.id,'open');notify('Use o menu nativo para arquivar.');await ctx.refresh();}));
+      if(task.state==='opened')buttons.append(action('Registar ação manual',async()=>{
+        if(!confirmAction('Você realmente arquivou esta conversa pelo menu do serviço? A extensão NÃO pode verificar essa afirmação.'))return;
+        await reviewAction(task.id,'reported');notify('Marcado como informado pelo usuário, não verificado na conta.');await ctx.refresh();
+      }));
+      buttons.append(action('Ignorar',async()=>{await reviewAction(task.id,'skip');await ctx.refresh();}));
+      row.append(buttons);guidedList.append(row);
+    }
+  }).catch(err=>guidedList.replaceChildren(empty('Falha na revisão: '+String(err))));
   const notice=el('div','note');notice.append(el('strong','','Diferença importante'));
   notice.append(el('p','','Arquivar nesta extensão apenas muda sua biblioteca IAPro. Para tirar a conversa da barra lateral da conta, abra o chat e use Arquivar no menu nativo do ChatGPT ou Gemini, conforme a plataforma.'));
   const fold=(name:string,content:HTMLElement):HTMLDetailsElement=>{
     const details=el('details','disclosure');details.append(el('summary','disclosure-trigger',name),content);return details;
   };
   const intro=[root.firstChild!,root.children[1]!];
-  root.replaceChildren(...intro,preview,
+  root.replaceChildren(...intro,preview,guided,
     fold('Política de arquivamento local',policy),
     fold(`Pastas (${ctx.folders.length})`,folders),
     fold(`Regras de classificação (${settings.rules.length})`,rules),notice);
