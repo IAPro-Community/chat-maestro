@@ -23,9 +23,9 @@ async function refresh():Promise<void>{
     const shell=el('div','workspace-shell');
     const top=el('header','workspace-header');
     const brand=el('div','branding');
-    const logo=el('img','brand-logo');logo.src='assets/icon32.png';logo.width=32;logo.height=32;logo.alt='';
+    const mark=el('img','brand-logo');mark.src='assets/icon128.png';mark.width=32;mark.height=32;mark.alt='';
     const titles=el('div','brand-copy');titles.append(el('strong','brand-title','Chat Maestro'),el('span','brand-subtitle','Organize suas conversas com IA'));
-    brand.append(logo,titles);top.append(brand);
+    brand.append(mark,titles);top.append(brand);
     const navigation=el('nav','navigation');navigation.setAttribute('aria-label','Navegação principal');
     for(const {id,label,icon} of TABS){
       const button=el('button',`nav-button${tab===id?' current':''}`);button.type='button';
