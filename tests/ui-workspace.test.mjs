@@ -12,7 +12,7 @@ test('workspace has one keyboard shortcut handler and a persistent navigation sh
 });
 test('templates appear ahead of manual queue and editor is collapsed',()=>{
   const prompts=read('../src/ui/screens/prompts.ts');
-  assert.match(prompts,/root\.append\(label,list,editor,queue\)/);
+  assert.match(prompts,/root\.append\(label,list,editor,queue,chainView\)/);
   assert.match(prompts,/el\('details','disclosure queue-disclosure'\)/);
 });
 test('queue is contextual, never sends automatically and does not require URL upfront',()=>{
