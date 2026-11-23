@@ -26,6 +26,7 @@ test('notas e sequências preservadas em armazenamento local',async()=>{
 
 
 test('backup v4 preserva notas e chains com validação de versão',async()=>{
+ globalThis.chrome={storage:{local:{get:async()=>({}),set:async()=>{}}},alarms:{clear:async()=>true,create:async()=>{}}};
  const {makeBackup,parseBackup}=await import('../dist/platform/backup.js');
  const chat=parseManualConversation('https://chatgpt.com/c/aaabbbcccdddeee','Conhecimento');
  await replaceAll([chat],[],[]);
