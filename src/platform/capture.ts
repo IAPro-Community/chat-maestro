@@ -1,16 +1,11 @@
 import {parseSidebar,parseManualConversation, type SidebarItem} from '../domain/importer.js';
-import {parseConversationUrl,providerFromPage,PROVIDER_LABEL} from '../domain/providers.js';
+import {parseConversationUrl,PROVIDER_LABEL} from '../domain/providers.js';
+import {getActiveAiTab,captureAccessError} from './site-access.js';
 import {importChats} from './db.js';
 
-/** Usa activeTab: nenhuma permissão permanente para ler os sites ou suas mensagens. */
-async function activeTab():Promise<{id:number;url:string}> {
-  const [tab]=await chrome.tabs.query({active:true,currentWindow:true});
-  if(!tab?.id || !tab.url || !providerFromPage(tab.url))throw Error('Abra ChatGPT ou Gemini na aba ativa.');
-  return {id:tab.id,url:tab.url};
-}
 export async function captureCurrentSidebar():Promise<{count:number;provider:string}> {
-  const tab=await activeTab();
-  const provider=providerFromPage(tab.url)!;
+  const tab=await getActiveAiTab();
+  const provider=tab.provider;
   const result=await chrome.scripting.executeScript<SidebarItem[]>({
     target:{tabId:tab.id},
     func:()=>{
@@ -30,7 +25,7 @@ export async function captureCurrentSidebar():Promise<{count:number;provider:str
       }
       return rows.slice(0,2000);
     }
-  });
+  }).catch(error=>{throw captureAccessError(error,provider);});
   const rows=result[0]?.result??[];
   const validated=parseSidebar(rows).filter(r=>r.provider===provider);
   if(!validated.length)throw Error('Nenhuma conversa com link reconhecido. A estrutura da barra lateral pode ter mudado. Use “Salvar conversa aberta”.');
@@ -38,9 +33,9 @@ export async function captureCurrentSidebar():Promise<{count:number;provider:str
   return {count:validated.length,provider:PROVIDER_LABEL[provider]};
 }
 export async function captureOpenConversation():Promise<string>{
-  const tab=await activeTab();
+  const tab=await getActiveAiTab();
   const ref=parseConversationUrl(tab.url);
-  if(!ref)throw Error('Abra uma conversa específica (não a página inicial) do ChatGPT ou Gemini.');
+  if(!ref)throw Error('O site está aberto, mas esta não é uma conversa identificável. Abra uma conversa específica pelo histórico do ChatGPT ou Gemini antes de salvá-la.');
   const result=await chrome.scripting.executeScript<string>({
     target:{tabId:tab.id},
     func:()=>{
@@ -48,7 +43,7 @@ export async function captureOpenConversation():Promise<string>{
       const raw=(heading?.textContent||document.title||'').trim();
       return raw.replace(/\s*[-|–]\s*(ChatGPT|Gemini).*$/i,'').slice(0,250);
     }
-  });
+  }).catch(error=>{throw captureAccessError(error,ref.provider);});
   await importChats([parseManualConversation(ref.url,result[0]?.result||`${PROVIDER_LABEL[ref.provider]} · ${ref.nativeId}`)]);
   return PROVIDER_LABEL[ref.provider];
 }

@@ -20,8 +20,12 @@ interface ChromeApi {
     }
   };
   tabs: {
-    query: (criteria: {active: boolean; currentWindow: boolean}) => Promise<ChromeTab[]>;
+    query: (criteria: {active: boolean; currentWindow?: boolean; lastFocusedWindow?: boolean}) => Promise<ChromeTab[]>;
     create: (options: {url: string; active?: boolean}) => Promise<ChromeTab>;
+  };
+  permissions: {
+    contains: (permissions: {origins: string[]}) => Promise<boolean>;
+    request: (permissions: {origins: string[]}) => Promise<boolean>;
   };
   scripting: {
     executeScript: <T>(args: {target: {tabId: number}; func: (...args: any[]) => T; args?: any[]}) => Promise<Array<{result: T}>>;

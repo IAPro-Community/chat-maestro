@@ -2,6 +2,7 @@ import {parseConversationUrl,PROVIDER_LABEL} from '../../domain/providers.js';
 import {queueForConversation,nextPending,type QueuedMessage} from '../../domain/queue.js';
 import {queued,addQueuedMessage,updateQueuedMessage,deleteQueuedMessage,moveQueuedMessage,changeQueueStatus} from '../../platform/queue-store.js';
 import {insertIntoActiveComposer} from '../../platform/composer.js';
+import {getActiveAiTab} from '../../platform/site-access.js';
 import {el,action,field,empty,notify,confirmAction} from '../dom.js';
 
 /** A fila é contextual: o usuário escolhe a conversa antes de preparar qualquer envio. */
@@ -13,8 +14,8 @@ export function renderQueue():HTMLElement{
   const picker=el('details','disclosure subtle-disclosure');
   picker.append(el('summary','disclosure-trigger','Usar outra conversa ou colar link'),field('URL da conversa',url));
   const active=action('Detectar conversa aberta',async()=>{
-    const [tab]=await chrome.tabs.query({active:true,currentWindow:true});
-    const ref=tab?.url?parseConversationUrl(tab.url):null;
+    const tab=await getActiveAiTab();
+    const ref=parseConversationUrl(tab.url);
     if(!ref){status.textContent='Abra uma conversa específica no ChatGPT ou Gemini. Você também pode colar a URL manualmente abaixo.';return;}
     url.value=ref.url;editing=null;body.value='';save.textContent='Adicionar mensagem';picker.open=false;await load();
   });picker.append(active);root.append(picker);
@@ -86,8 +87,8 @@ export function renderQueue():HTMLElement{
     row.append(buttons);return row;
   }
   url.addEventListener('change',()=>{editing=null;body.value='';save.textContent='Adicionar mensagem';void load();});
-  void chrome.tabs.query({active:true,currentWindow:true}).then(tabs=>{
-    const ref=tabs[0]?.url?parseConversationUrl(tabs[0].url):null;
+  void getActiveAiTab().then(tab=>{
+    const ref=parseConversationUrl(tab.url);
     if(ref && !url.value){url.value=ref.url;void load();}
   }).catch(()=>{});
   void load();return root;

@@ -3,7 +3,7 @@ export function el<K extends keyof HTMLElementTagNameMap>(tag:K,className='',tex
   const item=document.createElement(tag);if(className)item.className=className;if(text!==undefined)item.textContent=text;return item;
 }
 export function action(label:string,handler:()=>void|Promise<void>,variant:'primary'|'quiet'|'danger'='quiet'):HTMLButtonElement{
-  const b=el('button',`btn ${variant}`,label);b.type='button';b.addEventListener('click',()=>{void Promise.resolve().then(handler).catch(err=>notify(err instanceof Error?err.message:String(err),true));});return b;
+  const b=el('button',`btn ${variant}`,label);b.type='button';b.addEventListener('click',()=>{try{void Promise.resolve(handler()).catch(err=>notify(err instanceof Error?err.message:String(err),true));}catch(err){notify(err instanceof Error?err.message:String(err),true);}});return b;
 }
 export function notify(message:string,error=false):void{
   const toast=document.getElementById('toast');if(!toast)return;

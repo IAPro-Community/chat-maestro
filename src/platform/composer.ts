@@ -1,9 +1,9 @@
-import {providerFromPage,parseConversationUrl} from '../domain/providers.js';
+import {parseConversationUrl} from '../domain/providers.js';
+import {getActiveAiTab,captureAccessError} from './site-access.js';
 /** Somente insere no editor com clique explícito; nunca envia mensagens nem usa endpoints privados. */
 export async function insertIntoActiveComposer(text:string,targetConversationUrl?:string):Promise<void>{
   if(!text.trim()||text.length>20000)throw Error('Prompt vazio ou muito extenso.');
-  const [tab]=await chrome.tabs.query({active:true,currentWindow:true});
-  if(!tab?.id||!tab.url||!providerFromPage(tab.url))throw Error('Abra uma aba ChatGPT ou Gemini para inserir o prompt.');
+  const tab=await getActiveAiTab();
   const expected=targetConversationUrl?parseConversationUrl(targetConversationUrl):null;
   if(targetConversationUrl && !expected)throw Error('Destino da fila inválido.');
   if(expected){const active=parseConversationUrl(tab.url);if(!active || active.id!==expected.id || active.provider!==expected.provider)throw Error('A aba ativa não é a conversa de destino. Abra a conversa correta antes de preparar a fila.');}
@@ -43,6 +43,6 @@ export async function insertIntoActiveComposer(text:string,targetConversationUrl
       }
     }
     return false;
-  }});
+  }}).catch(error=>{throw captureAccessError(error,tab.provider);});
   if(outcome[0]?.result!==true)throw Error('Não foi possível preparar a mensagem. Confirme a conversa, espere a caixa ficar disponível e remova qualquer rascunho existente antes de tentar novamente.');
 }
