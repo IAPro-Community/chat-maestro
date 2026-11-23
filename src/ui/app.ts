@@ -6,6 +6,7 @@ import {renderPrompts} from './screens/prompts.js';
 import {renderData} from './screens/data.js';
 
 type Tab='library'|'organize'|'prompts'|'data';
+if(window.location.pathname.endsWith('/manager.html'))document.documentElement.classList.add('manager-view');
 const TABS:readonly {id:Tab;label:string}[]=[
   {id:'library',label:'Biblioteca'},
   {id:'organize',label:'Organizar'},

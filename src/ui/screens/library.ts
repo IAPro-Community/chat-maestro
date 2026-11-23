@@ -58,7 +58,14 @@ function card(chat:Chat,ctx:Context,selected:Set<string>,onSelection:()=>void):H
   return item;
 }
 export function renderLibrary(ctx:Context):HTMLElement{
-  const root=el('section','screen');root.append(el('h2','screen-title','Sua biblioteca'));
+  const root=el('section','screen');
+  const heading=el('div','library-heading');
+  heading.append(el('h2','screen-title','Sua biblioteca'));
+  const openManager=action('Abrir gerenciador em tela cheia',()=>{
+    return chrome.tabs.create({url:chrome.runtime.getURL('manager.html'),active:true}).then(()=>{});
+  });
+  openManager.classList.add('open-manager');
+  heading.append(openManager);root.append(heading);
   root.append(el('p','hint','Encontre o que importa, organize por assunto e retome qualquer conversa. Tudo na sua biblioteca local.'));
   const sources=el('div','source-connections');sources.setAttribute('aria-label','Permissões de acesso aos assistentes');
   for(const provider of ['chatgpt','gemini'] as const){
@@ -142,5 +149,25 @@ export function renderLibrary(ctx:Context):HTMLElement{
   // Seleção é limpa ao mudar filtros; operações em lote nunca agem sobre itens ocultos.
   const clear=action('Limpar seleção',()=>{selected.clear();renderList();updateSelection();});
   const selectRow=el('div','buttons selection-tools');selectRow.append(pickVisible,clear);
-  root.append(toolbar,provider,filters,selectRow,bulk,result);updateSelection();renderList();return root;
+  const rail=el('aside','folder-rail');
+  rail.setAttribute('aria-label','Pastas e coleções da biblioteca');
+  rail.append(el('h3','section-heading','Coleções'));
+  const collection=(title:string,target:Filter,targetFolder='all',count?:number)=>{
+    const button=action(title+(count===undefined?'':` · ${count}`),()=>{
+      filter=target;folderFilter=targetFolder;void ctx.refresh();
+    });
+    button.classList.add('rail-item');
+    button.classList.toggle('selected',filter===target && folderFilter===targetFolder);
+    rail.append(button);
+  };
+  collection('Todas as conversas','all','all',ctx.chats.length);
+  collection('Favoritas','pinned','all',ctx.chats.filter(c=>c.pinned).length);
+  collection('Arquivadas','archived','all',ctx.chats.filter(c=>c.archived).length);
+  rail.append(el('h3','section-heading rail-folders-title','Pastas'));
+  for(const f of ctx.folders)collection(f.name,'all',f.id,ctx.chats.filter(c=>c.folderId===f.id).length);
+  if(!ctx.folders.length)rail.append(el('p','hint','Crie pastas em Organizar.'));
+  const content=el('div','library-content');
+  content.append(toolbar,provider,filters,selectRow,bulk,result);
+  const workspace=el('div','library-layout');workspace.append(rail,content);
+  root.append(workspace);updateSelection();renderList();return root;
 }

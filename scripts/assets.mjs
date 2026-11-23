@@ -1,6 +1,6 @@
 import {copyFileSync,mkdirSync,readFileSync,writeFileSync} from 'node:fs';
 mkdirSync('dist/ui',{recursive:true});mkdirSync('dist/assets',{recursive:true});
-copyFileSync('panel.html','dist/panel.html');copyFileSync('src/ui/styles.css','dist/ui/styles.css');
+copyFileSync('panel.html','dist/panel.html');copyFileSync('manager.html','dist/manager.html');copyFileSync('src/ui/styles.css','dist/ui/styles.css');
 // Os ícones do navegador já foram gerados: o pacote não inclui imagens de referência.
 
 for(const n of [16,32,48,128])copyFileSync(`assets/icon${n}.png`,`dist/assets/icon${n}.png`);

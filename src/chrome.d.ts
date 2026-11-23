@@ -3,6 +3,7 @@ interface ChromeTab { id?: number; url?: string; active?: boolean; windowId?: nu
 interface ChromeApi {
   runtime: {
     lastError?: {message: string};
+    getURL: (path: string) => string;
     onInstalled: {addListener: (callback: () => void) => void};
     onStartup: {addListener: (callback: () => void) => void};
   };
