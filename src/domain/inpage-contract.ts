@@ -8,7 +8,7 @@ export function parseInlineRequest(value:unknown):InlineRequest|null{
   const x=value as Record<string,unknown>;
   if(x.type!==INLINE_MESSAGE || !['status','save','favorite','manager'].includes(String(x.action))||typeof x.href!=='string'||x.href.length>2048)return null;
   if(x.title!==undefined && (typeof x.title!=='string'||x.title.length>250))return null;
-  return {type:INLINE_MESSAGE,action:x.action as InlineAction,href:x.href,title:typeof x.title==='string'?x.title:undefined};
+  return {type:INLINE_MESSAGE,action:x.action as InlineAction,href:x.href,...(typeof x.title==='string'?{title:x.title}:{})};
 }
 export function validateInlineContext(senderUrl:string,tabUrl:string,href:string):{provider:AIProvider;conversation:ConversationRef|null}|null{
   const senderProvider=providerFromPage(senderUrl),tabProvider=providerFromPage(tabUrl),hrefProvider=providerFromPage(href);
