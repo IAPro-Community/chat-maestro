@@ -35,13 +35,13 @@ test('exportador recusa seleção vazia ou maior que 100',()=>{
 function backup(version,rows){return {kind:'iapro-optimizer',version,exportedAt:'2026-11-22',chats:rows,folders:[],prompts:[],settings:structuredClone(DEFAULT_SETTINGS)};}
 test('backup v2 suporta ChatGPT e Gemini sem colisão de ID',()=>{
   const b=parseBackup(backup(2,chats));
-  assert.equal(b.version,3);assert.equal(b.chats.length,2);
+  assert.equal(b.version,4);assert.equal(b.chats.length,2);
   assert.deepEqual(b.chats.map(c=>c.provider),['chatgpt','gemini']);
 });
 test('backup v1 é migrado sem perder marcações',()=>{
   const old={...chats[0],pinned:true};delete old.provider;
   const b=parseBackup(backup(1,[old]));
-  assert.equal(b.version,3);assert.equal(b.chats[0].provider,'chatgpt');assert.equal(b.chats[0].pinned,true);
+  assert.equal(b.version,4);assert.equal(b.chats[0].provider,'chatgpt');assert.equal(b.chats[0].pinned,true);
 });
 test('backup não aceita provedor mentiroso ou URL trocada',()=>{
   const fake={...chats[1],provider:'chatgpt'};
