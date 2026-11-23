@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.5.0 — Primeira integração contextual (2026-11-23)
+
+- Adicionado botão Maestro diretamente nas páginas autorizadas de ChatGPT e Gemini: salvar, favoritar e mover conversas para pastas **locais**, abrir gerenciador.
+- Registro dinâmico de content scripts Manifest V3 por domínio opt-in, com bundle IIFE e adaptadores independentes de título/URL.
+- Worker valida remetente, frame principal, domínio, ID da conversa e permissão antes de executar qualquer ação local.
+- Suporte a conversas de projetos/GPTs ChatGPT no formato `/g/.../c/...`.
+- Testes de contrato, integração estática do bundle, permissões e CI. **Homologação em conta autenticada ainda pendente**.
+- **Conta não identificada**; sem sincronização remota, arquivamento de conta ou envio automático.
+
+
 ## 0.4.1 — Correção do acesso às abas pelo painel (2026-11-23)
 
 - `activeTab` não é mais tratado como permissão confiável em cliques internos do painel lateral.

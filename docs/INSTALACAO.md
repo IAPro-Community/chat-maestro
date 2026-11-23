@@ -1,6 +1,6 @@
 # Instalar o Chat Maestro no Google Chrome
 
-> **Versão de desenvolvimento: 0.4.1.** O Chat Maestro ainda não está publicado na Chrome Web Store. A instalação é feita pelo modo de desenvolvedor, e a compatibilidade visual com sessões autenticadas de ChatGPT e Gemini ainda precisa de homologação.
+> **Versão de desenvolvimento: 0.5.0.** O Chat Maestro ainda não está publicado na Chrome Web Store. A instalação é feita pelo modo de desenvolvedor, e a compatibilidade visual com sessões autenticadas de ChatGPT e Gemini ainda precisa de homologação.
 
 ## Opção recomendada: instalar sem programar
 
@@ -59,7 +59,7 @@ O Chrome abrirá o painel lateral do Chat Maestro. Se não abrir, consulte a se�
 ### 5. Faça o primeiro teste
 
 1. Abra uma conversa em `https://chatgpt.com` ou `https://gemini.google.com`.
-2. No painel do Chat Maestro, em **Biblioteca** clique em **ChatGPT · conectar** ou **Gemini · conectar** e aceite a autorização de acesso solicitada pelo Chrome; também existem controles em **Dados**. Depois clique em **Salvar conversa aberta**.
+2. No painel do Chat Maestro, em **Biblioteca** clique em **ChatGPT · conectar** ou **Gemini · conectar** e aceite a autorização de acesso solicitada pelo Chrome; também existem controles em **Dados**. Depois procure o botão **Maestro** na página para salvar, favoritar ou mover a conversa para uma pasta local existente. Se não aparecer, atualize a aba e tente novamente. A opção **Salvar conversa aberta** também continua disponível na Biblioteca.
 3. Confira a nova entrada em **Biblioteca**.
 4. Teste favoritos, pastas e pesquisa antes de ativar regras de organização.
 5. Na aba **Prompts**, você pode preparar mensagens em fila, mas o **envio é manual**.
@@ -85,6 +85,7 @@ O Chrome abrirá o painel lateral do Chat Maestro. Se não abrir, consulte a se�
 | **O ícone não aparece no topo** | Abra o menu **Extensões** do Chrome e fixe o Chat Maestro. |
 | **O painel não abre** | Confira se a extensão está ativada em `chrome://extensions`, clique em **Recarregar**, reabra a aba e tente o ícone novamente. |
 | **Mensagem de falta de acesso mesmo com ChatGPT aberto** | Use **Conectar ChatGPT** na Biblioteca ou Dados. Sem autorização, o Chrome pode ocultar a URL da aba para extensões de painel lateral. |
+| **Botão Maestro não aparece no ChatGPT/Gemini** | Verifique se o provedor está conectado na Biblioteca, recarregue o site e abra uma conversa identificável. A integração visual segue experimental. |
 | **A conversa não é detectada** | Confirme o endereço da conversa; tente **Salvar conversa aberta**. Captura de links e inserção dependem do DOM de cada provedor e ainda não estão homologadas. |
 | **Não consigo enviar a fila automaticamente** | É comportamento esperado: **preparação e confirmação são manuais** nesta versão. |
 | **A limpeza não removeu chats do ChatGPT/Gemini** | É comportamento esperado: o arquivo é apenas da biblioteca local. |
@@ -108,7 +109,7 @@ O comando executa o build e os testes e gera `release/chat-maestro-v<versao>-ins
 
 - Extensão Manifest V3, com permissões `sidePanel`, `storage`, `alarms` e `scripting`. Permissões opcionais são solicitadas por provedor, somente para `chatgpt.com`, `chat.openai.com` e `gemini.google.com`; o usuário pode revogá-las nas configurações do Chrome.
 - Dados de biblioteca e fila ficam no navegador; **backups exportados não são criptografados**.
-- O acesso às páginas é pontual, por ação do usuário; não há captura permanente dos sites.
+- Após consentimento, um content script isolado fica disponível nos domínios autorizados para exibir ações e observar mudanças de URL/DOM de navegação. Ele não captura conteúdo de mensagens automaticamente; salvar/favoritar/mover requer clique.
 - A extensão **não** usa APIs privadas nem desbloqueia assinaturas de terceiros.
 - Testes de código/CI não substituem homologação prática em Chrome com contas reais.
 - Produto independente e **não afiliado à OpenAI ou ao Google**.

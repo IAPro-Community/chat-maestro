@@ -21,13 +21,13 @@
 </p>
 
 <p align="center">
-  <img alt="Versão 0.4.1" src="https://img.shields.io/badge/vers%C3%A3o-0.4.1-222222">
+  <img alt="Versão 0.5.0" src="https://img.shields.io/badge/vers%C3%A3o-0.5.0-222222">
   <img alt="Chrome Manifest V3" src="https://img.shields.io/badge/Chrome-Manifest%20V3-246BCE">
   <img alt="Local-first" src="https://img.shields.io/badge/dados-local--first-14866D">
   <a href="https://github.com/IAPro-Community/chat-maestro/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/IAPro-Community/chat-maestro/actions/workflows/ci.yml/badge.svg"></a>
 </p>
 
-> **Prévia para desenvolvimento · v0.4.1.** A base já inclui biblioteca, organização local e fila de mensagens. A integração visual com sessões autenticadas de ChatGPT e Gemini ainda precisa de homologação. Não há publicação na Chrome Web Store nesta fase.
+> **Prévia para desenvolvimento · v0.5.0.** A base inclui biblioteca, organização local, fila manual e integração in-page experimental. A integração visual com sessões autenticadas de ChatGPT e Gemini ainda precisa de homologação. Não há publicação na Chrome Web Store nesta fase.
 
 > **Direção de produto revista (novembro de 2026):** a extensão atual ainda é uma biblioteca local limitada e não entrega toda a experiência in-page, busca completa, arquivamento na conta ou fila automática que queremos. Leia a [auditoria e rebaseline do produto](docs/PRODUCT_REBASELINE_2026-11.md) e a [issue de execução](https://github.com/IAPro-Community/chat-maestro/issues/2). Não confunda recursos planejados com funcionalidades disponíveis.
 
@@ -47,6 +47,13 @@ O Chat Maestro nasceu para resolver esse problema cotidiano: **dar uma casa para
 | É difícil levar a organização para outra instalação | Exportação e backup da biblioteca |
 
 ## O que você pode fazer hoje
+
+### 00 · Ações na própria conversa (experimental)
+
+Após autorizar ChatGPT ou Gemini, um botão discreto **Maestro** fica disponível na página. Ele permite **salvar a conversa, favoritar localmente, mover para uma pasta existente e abrir a Biblioteca**. O conteúdo das mensagens não é coletado automaticamente. O ChatGPT também reconhece URLs de conversas dentro de projetos/GPTs.
+
+**Limitação:** a identidade da conta ainda não está verificada e o suporte visual em sessões autenticadas está em homologação. Não há arquivamento na conta, sincronização completa ou envio automático. Consulte a [documentação da integração contextual](docs/INPAGE_MVP.md).
+
 
 ### 01 · Sua biblioteca, no seu ritmo
 
@@ -75,6 +82,7 @@ O envio ainda é **manual**: depois de enviar, confirme a etapa no painel para l
 | Capacidade | ChatGPT | Gemini |
 | --- | --- | --- |
 | Biblioteca por título e link | Disponível | Disponível |
+| Botão Maestro contextual e ações locais | Experimental | Experimental |
 | Captura pontual da barra lateral | Dependente da interface | Dependente da interface |
 | Pastas, favoritos, busca e limpeza local | Disponível | Disponível |
 | Templates e fila de prompts | Disponível | Disponível |
@@ -96,7 +104,7 @@ flowchart LR
     C --> F["Backup e exportação"]
 ```
 
-**Sem backend próprio, sem telemetria, sem login adicional.** Os dados ficam no armazenamento da extensão no seu navegador. Operações sobre a página exigem ação explícita; não há captura contínua de conversas em segundo plano.
+**Sem backend próprio, sem telemetria, sem login adicional.** Os dados ficam no armazenamento da extensão no seu navegador. Após autorização, o script isolado observa alterações de navegação para exibir os controles; não coleta mensagens automaticamente nem executa mutações sem clique.
 
 ## Comece pelo Chrome
 
@@ -108,7 +116,7 @@ Sem GitHub Actions, sem criar conta no GitHub e sem instalar Node.js. O botão a
 2. No Chrome, abra `chrome://extensions` e ative **Modo do desenvolvedor**.
 3. Clique em **Carregar sem compactação** e selecione a pasta que contém `manifest.json`.
 4. Fixe o ícone **Chat Maestro** no menu de extensões e abra o painel lateral.
-5. Em **Biblioteca**, clique em **ChatGPT · conectar** ou **Gemini · conectar**, conforme a plataforma. Autorize o acesso aos domínios solicitados pelo Chrome antes de capturar conversas.
+5. Em **Biblioteca**, clique em **ChatGPT · conectar** ou **Gemini · conectar**, conforme a plataforma. Autorize o acesso e procure o botão **Maestro** na página; recarregue a aba se necessário.
 
 > **Prévia:** a versão atual é destinada a testes; a integração visual com sessões autenticadas de ChatGPT e Gemini ainda está em homologação. O download não é uma instalação pela Chrome Web Store. **O ZIP deve ser extraído** antes de carregar a extensão.
 
@@ -125,11 +133,11 @@ npm run package
 
 O build local gera `release/chat-maestro-v<versao>-instalar.zip`. Para usuários finais, use o **download direto** acima.
 
-### Interface revisada na v0.4.1
+### Interface revisada na v0.5.0
 
 A navegação permanece visível durante a rolagem; a **Biblioteca** agora mostra conexão por provedor, captura direta e ações de seleção contextual; **Prompts** dá prioridade aos modelos reutilizáveis e mantém fila/editor recolhidos; **Organizar** inicia pela prévia, deixando configurações detalhadas por demanda.
 
-A v0.4.1 remove a dependência de `activeTab` temporário para operar dentro do painel lateral, substituída por permissão opcional e explícita por provedor. Para organizar em uma área maior, a **Biblioteca** oferece **Abrir gerenciador em tela cheia**, usando os mesmos dados locais — sem duplicar a aplicação. **Ainda não é homologação do Chrome autenticado.** Arquivamento continua exclusivamente local e o envio da fila é manual. [Confira a comparação com a extensão original, os limites e os critérios de aceite](docs/UX_REBUILD.md). Imagens de interface geradas anteriormente são conceitos, **não capturas reais** do produto.
+A v0.5.0 remove a dependência de `activeTab` temporário para operar dentro do painel lateral, substituída por permissão opcional e explícita por provedor. Para organizar em uma área maior, a **Biblioteca** oferece **Abrir gerenciador em tela cheia**, usando os mesmos dados locais — sem duplicar a aplicação. **Ainda não é homologação do Chrome autenticado.** Arquivamento continua exclusivamente local e o envio da fila é manual. [Confira a comparação com a extensão original, os limites e os critérios de aceite](docs/UX_REBUILD.md). Imagens de interface geradas anteriormente são conceitos, **não capturas reais** do produto.
 
 ## Para onde vamos
 
@@ -137,7 +145,7 @@ A ideia não é acrescentar dezenas de botões. É resolver melhor os poucos pro
 
 | Etapa | Entrega que buscamos | Critério para considerar pronta |
 | --- | --- | --- |
-| **Agora · Base 0.4.1** | Biblioteca, pastas, prompts, fila manual e limpeza local | Build e testes automatizados; homologação de navegador ainda aberta |
+| **Agora · Base 0.5.0** | Biblioteca, pastas, prompts, fila manual e limpeza local | Build e testes automatizados; homologação de navegador ainda aberta |
 | **Próximo · Confiabilidade** | Testes reais em ChatGPT/Gemini, isolamento por conta, melhores diagnósticos | Nenhuma ação executada na conversa ou conta errada |
 | **Depois · Histórico em escala** | Busca indexada, paginação e importação mais robusta | Milhares de conversas sem travar a interface |
 | **Em estudo · Automação assistida** | Arquivamento na conta e envio sequencial opt-in | Evidência E2E, confirmação de cada ação, pausa e recuperação segura |
@@ -178,7 +186,7 @@ Consulte a [arquitetura](docs/ARCHITECTURE.md), as [regras de engenharia](AGENTS
 
 - **Seus dados ficam locais.** Conversas importadas, pastas e filas são armazenadas no navegador.
 - **Sem telemetria ou backend da extensão.** Não é necessário criar conta no Chat Maestro.
-- **Sem ações silenciosas.** Acesso à página ocorre sob demanda; envio de prompts e alterações nas contas não são automáticos.
+- **Sem ações silenciosas.** Ações de gravação local exigem clique; envio de prompts e alterações nas contas não são automáticos.
 - **Sem promessas enganosas.** O Maestro não desbloqueia assinaturas de ChatGPT, Gemini ou de outras extensões.
 
 **Atenção aos backups:** os arquivos exportados podem conter o conteúdo das suas conversas em texto claro. Guarde-os com o mesmo cuidado que qualquer documento confidencial.
