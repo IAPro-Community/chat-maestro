@@ -11,11 +11,10 @@
 O pacote é criado automaticamente pela [CI do Chat Maestro](https://github.com/IAPro-Community/chat-maestro/actions/workflows/ci.yml):
 
 1. Abra o link da CI e escolha a **execução mais recente da branch `main` com status verde (Success)**.
-2. Em **Artifacts**, baixe `chat-maestro-unpacked-package` (pode ser necessário estar logado no GitHub).
-3. O download do GitHub Actions é um ZIP que **contém outro ZIP** chamado `chat-maestro-vX.Y.Z-instalar.zip`. Extraia o ZIP externo e localize o instalador interno.
-4. Extraia o ZIP `...-instalar.zip` para uma pasta **fixa** de sua escolha, como `Documentos/Chat-Maestro` no Windows. Não remova nem renomeie essa pasta depois da instalação.
+2. Em **Artifacts**, baixe `chat-maestro-instalar` (pode ser necessário estar logado no GitHub).
+3. **Extraia esse ZIP uma única vez** para uma pasta **fixa**, como `Documentos/Chat-Maestro` no Windows. Ela conterá diretamente `manifest.json`, `panel.html`, `worker.js` e as demais pastas. Não remova nem renomeie essa pasta depois da instalação.
 
-> **Importante:** baixe um pacote somente de uma execução bem-sucedida da CI. Não use **Code → Download ZIP** como instalador: esse botão baixa o **código-fonte** e exige compilação. O Chrome também **não instala diretamente um ZIP**; é necessário descompactá-lo.
+> **Importante:** baixe o artefato apenas de uma execução bem-sucedida da CI. Não use **Code → Download ZIP** como instalador: ele baixa o **código-fonte**, que exige compilação. O Chrome **não instala diretamente um ZIP**; é necessário descompactá-lo. Se você já possui o arquivo `chat-maestro-vX.Y.Z-instalar.zip` gerado pelo build local, extraia-o diretamente da mesma maneira.
 
 ### 2. Ative o modo desenvolvedor
 
