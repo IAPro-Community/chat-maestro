@@ -98,9 +98,19 @@ flowchart LR
 
 ## Comece pelo Chrome
 
-A versão atual é distribuída **para instalação em modo desenvolvedor**. Ela ainda não está publicada na Chrome Web Store.
+**Não precisa programar para testar.** O Chat Maestro ainda não está na Chrome Web Store, mas o ZIP instalável é gerado automaticamente pelo GitHub Actions.
 
-**Requisitos:** Chrome 116+ e Node.js 22+ para gerar o pacote a partir do código.
+**[Guia completo de instalação e atualização](docs/INSTALACAO.md)** · **[Baixar pacote da CI](https://github.com/IAPro-Community/chat-maestro/actions/workflows/ci.yml)**
+
+1. Abra a **CI**, escolha a execução mais recente da `main` com **Success** e baixe o artefato `chat-maestro-unpacked-package`.
+2. Extraia o ZIP baixado e, em seguida, o arquivo interno `chat-maestro-vX.Y.Z-instalar.zip` para uma **pasta fixa**.
+3. Abra `chrome://extensions`, ative **Modo do desenvolvedor** e clique em **Carregar sem compactação**.
+4. Escolha a pasta que contém diretamente o `manifest.json`.
+5. Fixe o ícone da extensão e clique nele para abrir o painel lateral.
+
+> **Não use o ZIP de “Code → Download ZIP” como instalador:** ele contém o código-fonte, não a extensão compilada. Não instale um segundo ID sem antes fazer backup dos dados da instalação anterior.
+
+Para quem desenvolve, há também o caminho com Node.js 22+:
 
 ```bash
 git clone https://github.com/IAPro-Community/chat-maestro.git
@@ -109,15 +119,7 @@ npm install
 npm run package
 ```
 
-Isso executa o build e os testes e gera `release/chat-maestro-v0.3.4-instalar.zip`. Para instalar:
-
-1. Acesse `chrome://extensions` e ative **Modo do desenvolvedor**.
-2. Clique em **Carregar sem compactação** e selecione a pasta `dist/` gerada pelo build.
-3. Fixe o Chat Maestro na barra do Chrome e abra o painel lateral.
-4. Entre no ChatGPT ou Gemini e use **Dados → Salvar conversa aberta**.
-5. Experimente **Biblioteca**, **Organizar** e **Prompts**.
-
-Já usa uma versão anterior da IAPro Optimizer? **Faça um backup antes de atualizar.** Uma nova instalação com outro ID do Chrome não compartilha automaticamente o banco antigo. Veja as orientações de compatibilidade em [Arquitetura](docs/ARCHITECTURE.md) e os [cenários de homologação](docs/TESTES_MANUAIS.md).
+O pacote compilado estará em `release/chat-maestro-v<versao>-instalar.zip`. O guia detalha como **atualizar sem perder a biblioteca**, diagnosticar problemas de carregamento e testar ChatGPT/Gemini, sem confundir arquivamento local com arquivamento da conta.
 
 ## Para onde vamos
 
