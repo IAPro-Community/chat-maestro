@@ -9,12 +9,13 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "build": "tsc && node scripts/assets.mjs && node scripts/verify.mjs",
+    "build": "tsc && node scripts/assets.mjs && node scripts/bundle-content.mjs && node scripts/verify.mjs",
     "test": "npm run build && node --test tests/*.test.mjs",
     "verify": "node scripts/verify.mjs",
     "package": "npm test && node scripts/package.mjs"
   },
   "devDependencies": {
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "esbuild": "0.25.12"
   }
 }

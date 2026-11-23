@@ -55,3 +55,9 @@ test('permissões opcionais e nenhuma injeção estática',()=>{
   const content=readFileSync('src/content/inpage.ts','utf8');
   assert.doesNotMatch(content,/\.click\(\)|fetch\(|XMLHttpRequest|\.submit\(/);
 });
+
+test('script contextual é bundle clássico sem imports ESM',()=>{
+ const code=readFileSync('dist/content/inpage.js','utf8');
+ assert.doesNotMatch(code,/(^|\n)\s*(import|export)\s/m);
+ assert.match(code,/chat-maestro-inline-v1/);
+});

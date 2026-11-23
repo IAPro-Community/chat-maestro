@@ -8,4 +8,8 @@ const allowlist=['https://chatgpt.com/*','https://chat.openai.com/*','https://ge
 if(!Array.isArray(manifest.optional_host_permissions)||JSON.stringify([...manifest.optional_host_permissions].sort())!==JSON.stringify(allowlist.sort()))throw Error('Origens opt-in fora da allowlist');
 for(const file of ['panel.html','manager.html','worker.js','content/inpage.js','ui/app.js','ui/styles.css',...Object.values(manifest.icons),...Object.values(manifest.action?.default_icon ?? {})])if(!existsSync(join('dist',file)))throw Error(`Arquivo ausente: ${file}`);
 function walk(root){for(const name of readdirSync(root)){const p=join(root,name);if(statSync(p).isDirectory())walk(p);else if(p.endsWith('.js')){const text=readFileSync(p,'utf8');if(/\beval\s*\(|new\s+Function\s*\(/.test(text))throw Error(`Código dinâmico proibido: ${p}`);}}}
-walk('dist');console.log('Verificação MV3 e artefatos: OK');
+walk('dist');
+const injected=readFileSync('dist/content/inpage.js','utf8');
+if(/(^|\\n)\\s*(import|export)\\s/m.test(injected))throw Error('Content script não pode conter import/export ESM (precisa IIFE)');
+if(!injected.includes('chat-maestro-inline-v1'))throw Error('Bundle contextual sem marcador da interface');
+console.log('Verificação MV3, bundle IIFE e artefatos: OK');
