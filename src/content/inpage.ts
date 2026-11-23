@@ -1,9 +1,10 @@
 import {INLINE_MESSAGE,type InlineAction,type InlineResult} from '../domain/inpage-contract.js';
-import {parseConversationUrl,providerFromPage} from '../domain/providers.js';
+import {parseConversationUrl} from '../domain/providers.js';
+import {resolvePageAdapter} from './adapters.js';
 
 const ROOT_ID='chat-maestro-inline-v1';
-const provider=providerFromPage(location.href);
-if(provider && !document.getElementById(ROOT_ID)){
+const adapter=resolvePageAdapter(location.href);
+if(adapter && !document.getElementById(ROOT_ID)){
   const host=document.createElement('div');host.id=ROOT_ID;
   const shadow=host.attachShadow({mode:'closed'});
   const style=document.createElement('style');
@@ -52,7 +53,7 @@ const describe=()=>{
  return ref?('Conversa detectada no '+(ref.provider==='chatgpt'?'ChatGPT':'Gemini')+'.'):('Abra uma conversa específica para salvar ou favoritar.');
 };
 async function send(action:InlineAction,folderId?:string|null):Promise<InlineResult>{
- const title=(document.querySelector('main h1, main h2, nav [aria-current="page"]')?.textContent||document.title||'').trim().slice(0,250);
+ const title=adapter?.title(document)||document.title.slice(0,250);
  return chrome.runtime.sendMessage<InlineResult>({type:INLINE_MESSAGE,action,href:location.href,title,...(action==='move'?{folderId:folderId??null}:{})});
 }
 async function update():Promise<void>{
