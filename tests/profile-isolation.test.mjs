@@ -87,3 +87,16 @@ test('importações não misturam provedores no mesmo banco',async()=>{
   await assert.rejects(importChats([foreign]),/outro provedor/);
   assert.equal((await all('chats')).length,0);
 });
+
+test('migração Legado copia notas apenas de conversas do provedor de destino',async()=>{
+ const source={...parseManualConversation('https://chatgpt.com/c/xyzabcdef012345','Legado com nota')};
+ await importChats([source],undefined,'legacy');
+ const old=await all('bookmarks','legacy');
+ const mark={id:'bmark-123456789',chatId:source.id,provider:'chatgpt',quote:'Trecho',note:'Anotação',createdAt:Date.now()};
+ await put('bookmarks',mark,'legacy');
+ const p=await createProfile('chatgpt','Migrar anotações');
+ await copyLegacyToProfile(p.id,'chatgpt');
+ const copied=await all('bookmarks',p.id);
+ assert.ok(copied.some(x=>x.id===mark.id));
+ assert.equal((await all('bookmarks','legacy')).length,old.length+1);
+});

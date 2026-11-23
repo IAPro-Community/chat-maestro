@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import 'fake-indexeddb/auto';
 import {advanceChain,resetChain,chain,bookmark} from '../dist/domain/knowledge.js';
-import {replaceAll,all,put} from '../dist/platform/db.js';
+import {replaceAll,all,put,remove} from '../dist/platform/db.js';
 import {newQueueMessage} from '../dist/domain/queue.js';
 import {saveBookmark,bookmarksForChat} from '../dist/platform/bookmarks.js';
 import {createChain,moveChain} from '../dist/platform/chains.js';
@@ -42,4 +42,13 @@ test('backup v4 preserva notas e chains com validação de versão',async()=>{
  assert.equal(backup.queue.length,1);
  assert.equal(parseBackup(backup).queue.length,1);
  assert.throws(()=>parseBackup({...backup,bookmarks:[{...backup.bookmarks[0],chatId:'missing'}]}),/sem conversa/);
+});
+
+test('excluir uma conversa apaga somente suas anotações locais',async()=>{
+ const chat=parseManualConversation('https://chatgpt.com/c/longabcdef012345','Remover');
+ await replaceAll([chat],[],[]);
+ await saveBookmark(chat.id,'Trecho','Nota');
+ assert.equal((await all('bookmarks')).length,1);
+ await remove('chats',chat.id);
+ assert.equal((await all('bookmarks')).length,0);
 });
