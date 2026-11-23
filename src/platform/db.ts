@@ -4,15 +4,16 @@ import {applyToChat, MAX_BATCH, validSettings} from '../domain/organizer.js';
 import {mergeChat} from '../domain/importer.js';
 import {parseConversationUrl} from '../domain/providers.js';
 import {folderTree,folderDescendants} from '../domain/folders.js';
+import {indexTerms,queryTerms,intersectPostings,posting,type SearchPosting} from '../domain/search.js';
 import {activeScope,dbNameForScope,LEGACY_SCOPE,requireProfile} from './profiles.js';
-type StoreName = 'chats' | 'folders' | 'prompts' | 'meta' | 'queue';
+type StoreName = 'chats' | 'folders' | 'prompts' | 'meta' | 'queue' | 'search';
 const opening=new Map<string,Promise<IDBDatabase>>();
 export function openDB(scopeId:string=activeScope()):Promise<IDBDatabase>{
   const dbName=dbNameForScope(scopeId);
   const existing=opening.get(dbName);
   if(existing)return existing;
   const task=new Promise<IDBDatabase>((resolve,reject)=>{
-    const request=indexedDB.open(dbName,3);
+    const request=indexedDB.open(dbName,4);
     request.onupgradeneeded=(ev)=>{
       const db=request.result;
       if(!db.objectStoreNames.contains('chats')){const s=db.createObjectStore('chats',{keyPath:'id'});s.createIndex('byUpdate','updatedAt');}
@@ -20,6 +21,18 @@ export function openDB(scopeId:string=activeScope()):Promise<IDBDatabase>{
       if(!db.objectStoreNames.contains('prompts')) db.createObjectStore('prompts',{keyPath:'id'});
       if(!db.objectStoreNames.contains('meta')) db.createObjectStore('meta',{keyPath:'id'});
       if(!db.objectStoreNames.contains('queue')){const q=db.createObjectStore('queue',{keyPath:'id'});q.createIndex('byConversation','conversationId');}
+      if(!db.objectStoreNames.contains('search')){
+        const search=db.createObjectStore('search',{keyPath:'id'});
+        search.createIndex('byTerm','term');
+        search.createIndex('byChat','chatId');
+        const scan=request.transaction!.objectStore('chats').openCursor();
+        scan.onsuccess=()=>{
+          const row=scan.result;
+          if(!row)return;
+          for(const term of indexTerms(row.value as Chat))search.put(posting(String(row.key),term));
+          row.continue();
+        };
+      }
       if(ev.oldVersion>0 && ev.oldVersion<2){
         const cursorRequest=request.transaction!.objectStore('chats').openCursor();
         cursorRequest.onsuccess=()=>{
@@ -64,7 +77,41 @@ export async function put<T extends {id:string}>(name:StoreName,item:T):Promise<
   const db=await openDB();const tx=db.transaction(name,'readwrite');const done=txDone(tx);tx.objectStore(name).put(item);await done;
 }
 export async function remove(name:StoreName,id:string):Promise<void>{
-  const db=await openDB();const tx=db.transaction(name,'readwrite');const done=txDone(tx);tx.objectStore(name).delete(id);await done;
+  const db=await openDB();
+  const stores:StoreName[]=name==='chats'?['chats','search']:[name];
+  const tx=db.transaction(stores,'readwrite');const done=txDone(tx);
+  tx.objectStore(name).delete(id);
+  if(name==='chats')dropIndex(tx,id);
+  await done;
+}
+/** Indexa somente títulos e conteúdo efetivamente armazenado: nunca baixa histórico oculto. */
+function indexOne(tx:IDBTransaction,chat:Chat):void{
+  const store=tx.objectStore('search');
+  const cursor=store.index('byChat').openCursor(IDBKeyRange.only(chat.id));
+  cursor.onsuccess=()=>{
+    const row=cursor.result;
+    if(row){row.delete();row.continue();return;}
+    for(const term of indexTerms(chat))store.put(posting(chat.id,term));
+  };
+}
+function dropIndex(tx:IDBTransaction,chatId:string):void{
+  const cursor=tx.objectStore('search').index('byChat').openCursor(IDBKeyRange.only(chatId));
+  cursor.onsuccess=()=>{const row=cursor.result;if(row){row.delete();row.continue();}};
+}
+/** Busca por termos em índice persistente; resultados limitados e pagináveis por offset. */
+export async function searchIndexed(query:string,offset=0,limit=100,scopeId:string=activeScope()):Promise<{results:Chat[];total:number}>{
+  const terms=queryTerms(query);
+  if(!terms.length)return {results:[],total:0};
+  if(!Number.isSafeInteger(offset)||offset<0||!Number.isInteger(limit)||limit<1||limit>200)throw Error('Paginação inválida.');
+  const db=await openDB(scopeId);
+  const tx=db.transaction('search','readonly');
+  const store=tx.objectStore('search').index('byTerm');
+  const grouped=await Promise.all(terms.map(async term=>(await requestValue<SearchPosting[]>(store.getAll(term))).map(p=>p.chatId)));
+  const ids=intersectPostings(grouped);
+  const chatStore=db.transaction('chats','readonly').objectStore('chats');
+  const results=(await Promise.all(ids.map(id=>requestValue<Chat|undefined>(chatStore.get(id))))).filter((x):x is Chat=>!!x);
+  results.sort((a,b)=>(b.updatedAt??b.importedAt)-(a.updatedAt??a.importedAt)||a.id.localeCompare(b.id));
+  return {total:results.length,results:results.slice(offset,offset+limit)};
 }
 export async function importChats(rows:Chat[],onProgress?:(n:number)=>void,scopeId:string=activeScope()):Promise<number>{
   if(rows.length>100_000)throw Error('Importação muito grande.');
@@ -77,11 +124,14 @@ export async function importChats(rows:Chat[],onProgress?:(n:number)=>void,scope
   const db=await openDB(scopeId);
   for(let start=0;start<rows.length;start+=100){
     const batch=rows.slice(start,start+100);
-    const tx=db.transaction('chats','readwrite');const done=txDone(tx);
+    const tx=db.transaction(['chats','search'],'readwrite');const done=txDone(tx);
     const store=tx.objectStore('chats');
     for(const incoming of batch){
       const req=store.get(incoming.id);
-      req.onsuccess=()=>{store.put(mergeChat(req.result as Chat|undefined,incoming));};
+      req.onsuccess=()=>{
+        const merged=mergeChat(req.result as Chat|undefined,incoming);
+        store.put(merged);indexOne(tx,merged);
+      };
     }
     await done;
     count+=batch.length;onProgress?.(count);
@@ -201,10 +251,11 @@ export async function replaceAll(chats:Chat[],folders:Folder[],prompts:Prompt[],
     const p=await requireProfile(scopeId);
     if(chats.some(c=>c.provider!==p.provider)||queue.some(q=>q.provider!==p.provider))throw Error('Não é permitido misturar provedores no perfil local.');
   }
-  const db=await openDB(scopeId);const tx=db.transaction(['chats','folders','prompts','meta','queue'],'readwrite');const done=txDone(tx);
+  const db=await openDB(scopeId);const tx=db.transaction(['chats','folders','prompts','meta','queue','search'],'readwrite');const done=txDone(tx);
   const cs=tx.objectStore('chats'),fs=tx.objectStore('folders'),ps=tx.objectStore('prompts');
-  cs.clear();fs.clear();ps.clear();tx.objectStore('meta').clear();tx.objectStore('queue').clear();
-  for(const c of chats)cs.put(c);
+  cs.clear();fs.clear();ps.clear();tx.objectStore('meta').clear();tx.objectStore('queue').clear();tx.objectStore('search').clear();
+  const si=tx.objectStore('search');
+  for(const c of chats){cs.put(c);for(const term of indexTerms(c))si.put(posting(c.id,term));}
   for(const f of folders)fs.put(f);
   for(const p of prompts)ps.put(p);
   for(const item of queue)tx.objectStore('queue').put(item);
