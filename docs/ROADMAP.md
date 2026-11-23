@@ -70,3 +70,16 @@ Não acrescentar galerias, newsletters, marketplaces, analytics, sincronização
 - [x] Testes de colisão de ID, restauração entre perfis e exclusão de provedor incorreto.
 - [ ] **P0 aberto:** identificar/verificar com segurança a conta autenticada; perfil local não comprova isso.
 - [ ] **P0 aberto:** testar fluxo E2E com Chrome/Edge autenticado e duas contas no mesmo navegador.
+
+## Implementações 0.7.0 — gates ainda abertos
+
+- [x] Subpastas com detecção de ciclos, sem descartar pastas anteriores.
+- [x] Índice invertido local no IndexedDB e consulta por termos; UI ainda carrega registros em memória para filtros/estatísticas e precisa de paginação integral.
+- [x] Notas e destaques locais (não são âncoras estáveis de mensagens remotas).
+- [x] Chains manuais, pausa/retomada de fila, sem auto-send.
+- [x] Salvar links visíveis da sidebar com perfil explícito, sob clique.
+- [x] Arquivamento assistido por revisão, sem operação remota automatizada.
+- [ ] Identificação comprovada da conta autenticada; perfil segue escolha manual.
+- [ ] Busca e filtros paginados com benchmarks 10k/50k.
+- [ ] Arquivamento remoto/auto-send condicionados a E2E real e confirmação do resultado.
+- [ ] Recursos de outline/context links, P2.

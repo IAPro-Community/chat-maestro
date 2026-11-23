@@ -1,10 +1,10 @@
 # Instalar o Chat Maestro no Google Chrome
 
-> **Versão de desenvolvimento: 0.6.0.** O Chat Maestro ainda não está publicado na Chrome Web Store. A instalação é feita pelo modo de desenvolvedor, e a compatibilidade visual com sessões autenticadas de ChatGPT e Gemini ainda precisa de homologação.
+> **Versão de desenvolvimento: 0.7.0.** O Chat Maestro ainda não está publicado na Chrome Web Store. A instalação é feita pelo modo de desenvolvedor, e a compatibilidade visual com sessões autenticadas de ChatGPT e Gemini ainda precisa de homologação.
 
 ## Antes de usar: perfis locais
 
-Na v0.6.0, o primeiro passo após instalar é criar um **perfil local em Dados → Perfis locais**, por exemplo "ChatGPT · Pessoal". Ele não representa um login no provedor. A Biblioteca, a fila e os backups usam o perfil selecionado.
+Na v0.7.0, o primeiro passo após instalar é criar um **perfil local em Dados → Perfis locais**, por exemplo "ChatGPT · Pessoal". Ele não representa um login no provedor. A Biblioteca, a fila e os backups usam o perfil selecionado.
 
 Ao abrir o botão Maestro na página, escolha também o perfil local antes de salvar ou favoritar. A seleção é reiniciada a cada mudança de conversa.
 
@@ -123,3 +123,7 @@ O comando executa o build e os testes e gera `release/chat-maestro-v<versao>-ins
 - Produto independente e **não afiliado à OpenAI ou ao Google**.
 
 Veja o [README](../README.md), o [roadmap](ROADMAP.md) e o [checklist de homologação](TESTES_MANUAIS.md).
+
+## Recursos experimentais 0.7.0
+
+Em Biblioteca, crie subpastas e busque termos já presentes na biblioteca. Em Prompts, use Sequências com confirmação manual de cada etapa. Selecione texto no site e use Maestro para salvar trecho ou nota; isso não modifica seu histórico remoto. Em Organizar, use a revisão assistida para abrir cada conversa e arquivá-la manualmente pelo menu nativo.

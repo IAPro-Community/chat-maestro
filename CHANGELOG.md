@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.7.0 — Produtividade contextual e biblioteca (2026-11-23)
+
+- Hierarquia de pastas com validação de ciclos e compatibilidade legada.
+- Índice invertido local de títulos/mensagens, com migração e consultas na biblioteca.
+- Destaques/notas locais e seleção de texto na página.
+- Cadeias de prompts com avanço manual, fila com pausa e retomada.
+- Atalho local em links visíveis da barra lateral e prevenção de destino SPA obsoleto.
+- Revisão assistida de arquivo, sem mutação remota nem confirmação independente.
+- Backup v4 com notas e chains; importação de versões anteriores mantida.
+- Identidade autenticada e homologação Chrome/Edge reais ainda pendentes.
+
+
 ## 0.6.0 — Isolamento local e migração explícita (2026-11-23)
 
 - Perfis locais ChatGPT/Gemini com IndexedDB independente para conversas, pastas, prompts e filas.

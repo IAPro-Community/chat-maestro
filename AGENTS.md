@@ -66,3 +66,10 @@ Extensão independente de Chrome para ChatGPT e Gemini. Mantenha produto leve e 
 - Todas as mutações, filas, importações e backups devem usar o perfil correto; restaurações entre perfis exigem consentimento específico.
 - Rotina diária em novos perfis fica desabilitada até homologação. Arquivamento na conta e envio automático permanecem proibidos.
 - Consulte `docs/PERFIS_LOCAIS.md` e `tests/profile-isolation.test.mjs`.
+
+## Gates 0.7.0
+- Notas são dados locais ancorados por índice de importação ou texto selecionado, não por ID remoto confirmado.
+- Índice contém até 1200 termos únicos por conversa local; não afirmar histórico integral.
+- Ações in-page usam apenas URLs reconhecidas e dados do perfil local explicitamente escolhido.
+- Revisão de arquivamento é confirmação manual do usuário, não verificação independente.
+- Proibir auto-send e mutações remotas enquanto identidade e E2E estiverem pendentes.

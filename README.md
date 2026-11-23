@@ -21,13 +21,13 @@
 </p>
 
 <p align="center">
-  <img alt="Versão 0.6.0" src="https://img.shields.io/badge/vers%C3%A3o-0.6.0-222222">
+  <img alt="Versão 0.7.0" src="https://img.shields.io/badge/vers%C3%A3o-0.7.0-222222">
   <img alt="Chrome Manifest V3" src="https://img.shields.io/badge/Chrome-Manifest%20V3-246BCE">
   <img alt="Local-first" src="https://img.shields.io/badge/dados-local--first-14866D">
   <a href="https://github.com/IAPro-Community/chat-maestro/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/IAPro-Community/chat-maestro/actions/workflows/ci.yml/badge.svg"></a>
 </p>
 
-> **Prévia para desenvolvimento · v0.6.0.** A base inclui biblioteca, organização local, fila manual e integração in-page experimental. A integração visual com sessões autenticadas de ChatGPT e Gemini ainda precisa de homologação. Não há publicação na Chrome Web Store nesta fase.
+> **Prévia para desenvolvimento · v0.7.0.** A base inclui biblioteca, organização local, fila manual e integração in-page experimental. A integração visual com sessões autenticadas de ChatGPT e Gemini ainda precisa de homologação. Não há publicação na Chrome Web Store nesta fase.
 
 > **Direção de produto revista (novembro de 2026):** a extensão atual ainda é uma biblioteca local limitada e não entrega toda a experiência in-page, busca completa, arquivamento na conta ou fila automática que queremos. Leia a [auditoria e rebaseline do produto](docs/PRODUCT_REBASELINE_2026-11.md) e a [issue de execução](https://github.com/IAPro-Community/chat-maestro/issues/2). Não confunda recursos planejados com funcionalidades disponíveis.
 
@@ -46,13 +46,15 @@ O Chat Maestro nasceu para resolver esse problema cotidiano: **dar uma casa para
 | Vários prompts precisam ser enviados em sequência | Fila editável por conversa, com preparação e confirmação manual |
 | É difícil levar a organização para outra instalação | Exportação e backup da biblioteca |
 
-## Novo na v0.6.0 — dados separados por perfil local
+## Perfis locais separados desde a v0.6.0
 
 O Chat Maestro agora permite criar **perfis locais** para ChatGPT Pessoal, ChatGPT Trabalho, Gemini e outros contextos. Cada perfil tem seu **próprio IndexedDB**, incluindo conversas, pastas, prompts e filas. Dados anteriores permanecem no espaço **Legado** e só são copiados mediante decisão explícita.
 
 Para usar: abra **Dados → Perfis locais**, crie um perfil e selecione-o. No botão Maestro dentro do ChatGPT/Gemini, escolha novamente o perfil antes de salvar, favoritar ou mover. A seleção no site reinicia quando a conversa muda. [Guia completo](docs/PERFIS_LOCAIS.md).
 
 **Aviso:** perfil local não é identificação da conta autenticada. Se você escolher o perfil errado, a extensão não tem como detectar com segurança. Por isso arquivamento na conta, sincronização remota e envio automático continuam indisponíveis.
+
+> **Incremento 0.7.0 (experimental):** pastas aninhadas, busca indexada de conversas **já armazenadas**, notas/destaques, prompt chains manuais, pausa da fila, ações em links visíveis da sidebar e revisão assistida de arquivo. **Ainda não identifica a conta autenticada, não arquiva remotamente sozinho nem envia mensagens automaticamente.** [Matriz técnica](docs/DELIVERY_0.7.0.md).
 
 ## O que você pode fazer hoje
 
@@ -65,11 +67,17 @@ Após autorizar ChatGPT ou Gemini, um botão discreto **Maestro** fica disponív
 
 ### 01 · Sua biblioteca, no seu ritmo
 
+Agora com subpastas, pesquisa por termos indexados de títulos e mensagens locais e destaques sobre conteúdo importado/selecionado. O índice não inclui conteúdo que a extensão ainda não armazenou.
+
+
 Salve a conversa aberta, capture links **visíveis** da barra lateral sob demanda, favorite, mova para pastas e filtre por ChatGPT ou Gemini. Exporte uma seleção em **JSON, Markdown ou TXT**.
 
 A biblioteca é da extensão: ela **não reorganiza automaticamente a barra lateral da sua conta**.
 
 ### 02 · Limpeza sem sustos
+
+O modo de **revisão assistida** abre conversas antigas, mas você faz a operação de arquivamento pelo menu do próprio serviço. O Chat Maestro não verifica remotamente a confirmação manual.
+
 
 Crie regras para separar assuntos e revisar conversas antigas. O organizador utiliza datas de atividade confiáveis, respeita itens protegidos e permite visualizar candidatos antes de aplicar mudanças. A rotina diária é opcional e começa desligada.
 
@@ -77,9 +85,15 @@ Crie regras para separar assuntos e revisar conversas antigas. O organizador uti
 
 ### 03 · Prompts que você realmente reutiliza
 
+Também há sequências de prompts: cada etapa é preparada, enviada e confirmada manualmente; não existe execução automática homologada.
+
+
 Salve modelos com variáveis, edite-os e prepare o texto para copiar ou inserir no compositor da conversa aberta. A inserção depende da interface de cada plataforma e nunca dispara o envio por conta própria.
 
 ### 04 · Ideias em fila, sem perder o controle
+
+Mensagens pendentes podem ser pausadas e retomadas sem perder a posição.
+
 
 Monte uma fila de até **30 mensagens por conversa**, reordene, edite e prepare a próxima no campo de entrada. O Maestro confere o destino e evita sobrescrever rascunhos existentes.
 
@@ -142,22 +156,22 @@ npm run package
 
 O build local gera `release/chat-maestro-v<versao>-instalar.zip`. Para usuários finais, use o **download direto** acima.
 
-### Interface revisada na v0.6.0
+### Interface revisada na v0.7.0
 
 A navegação permanece visível durante a rolagem; a **Biblioteca** agora mostra conexão por provedor, captura direta e ações de seleção contextual; **Prompts** dá prioridade aos modelos reutilizáveis e mantém fila/editor recolhidos; **Organizar** inicia pela prévia, deixando configurações detalhadas por demanda.
 
-A v0.6.0 remove a dependência de `activeTab` temporário para operar dentro do painel lateral, substituída por permissão opcional e explícita por provedor. Para organizar em uma área maior, a **Biblioteca** oferece **Abrir gerenciador em tela cheia**, usando os mesmos dados locais — sem duplicar a aplicação. **Ainda não é homologação do Chrome autenticado.** Arquivamento continua exclusivamente local e o envio da fila é manual. [Confira a comparação com a extensão original, os limites e os critérios de aceite](docs/UX_REBUILD.md). Imagens de interface geradas anteriormente são conceitos, **não capturas reais** do produto.
+A v0.7.0 remove a dependência de `activeTab` temporário para operar dentro do painel lateral, substituída por permissão opcional e explícita por provedor. Para organizar em uma área maior, a **Biblioteca** oferece **Abrir gerenciador em tela cheia**, usando os mesmos dados locais — sem duplicar a aplicação. **Ainda não é homologação do Chrome autenticado.** Arquivamento continua exclusivamente local e o envio da fila é manual. [Confira a comparação com a extensão original, os limites e os critérios de aceite](docs/UX_REBUILD.md). Imagens de interface geradas anteriormente são conceitos, **não capturas reais** do produto.
 
 ## Para onde vamos
 
-A revisão de segurança 0.6.0 adicionou nova checagem da aba ativa antes de alterações locais. Veja o [relatório de QA de 23/11/2026](docs/QA_2026-11-23.md), com evidências, limitações e cenários que ainda bloqueiam a homologação.
+A revisão de segurança 0.7.0 adicionou nova checagem da aba ativa antes de alterações locais. Veja o [relatório de QA de 23/11/2026](docs/QA_2026-11-23.md), com evidências, limitações e cenários que ainda bloqueiam a homologação.
 
 
 A ideia não é acrescentar dezenas de botões. É resolver melhor os poucos problemas que fazem diferença todo dia.
 
 | Etapa | Entrega que buscamos | Critério para considerar pronta |
 | --- | --- | --- |
-| **Agora · Base 0.6.0** | Biblioteca, pastas, prompts, fila manual e limpeza local | Build e testes automatizados; homologação de navegador ainda aberta |
+| **Agora · Base 0.7.0** | Biblioteca, pastas, prompts, fila manual e limpeza local | Build e testes automatizados; homologação de navegador ainda aberta |
 | **Próximo · Confiabilidade** | Testes reais em ChatGPT/Gemini, isolamento por conta, melhores diagnósticos | Nenhuma ação executada na conversa ou conta errada |
 | **Depois · Histórico em escala** | Busca indexada, paginação e importação mais robusta | Milhares de conversas sem travar a interface |
 | **Em estudo · Automação assistida** | Arquivamento na conta e envio sequencial opt-in | Evidência E2E, confirmação de cada ação, pausa e recuperação segura |

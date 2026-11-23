@@ -1,4 +1,4 @@
-# Homologação manual v0.6.0
+# Homologação manual v0.7.0
 
 Marque cada caso antes da publicação. **Os testes automatizados não substituem estes cenários.**
 
@@ -78,3 +78,12 @@ Marque cada caso antes da publicação. **Os testes automatizados não substitue
 - [ ] Backup de outro perfil: exigir segunda confirmação; backup com outro provedor: bloquear.
 - [ ] Abrir painéis/manager com diferentes perfis e validar ausência de interferência entre bancos.
 - [ ] Confirmar em Chrome e Edge reais, duas contas autenticadas, navegação SPA, permissões e ausência de mutações remotas.
+
+## Gate reservado ao mantenedor — 0.7.0
+
+- [ ] Validar ChatGPT/Gemini autenticados e contas distintas, permissões concedidas/revogadas, troca de aba e SPA.
+- [ ] Confirmar controles junto aos links do histórico sem duplicação, quebra de menus ou destino antigo.
+- [ ] Testar pastas aninhadas, busca em mensagens armazenadas, notas e restauração de backup v4.
+- [ ] Confirmar arquivamento assistido como ação manual nativa, jamais silenciosa.
+- [ ] Testar fila pausada, prompt chains, rascunhos e troca de conversa sem envio automático.
+- [ ] Medir escala 10k/50k antes de anunciar desempenho; capturar screenshots reais.
