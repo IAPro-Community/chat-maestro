@@ -1,46 +1,42 @@
 # Identidade visual — Chat Maestro
 
-A metáfora visual é um **maestro que conduz conversas**. O balão simboliza os chats, a gravata representa a regência e a batuta remete a organizar as interações entre assistentes de IA.
+## Origem e fidelidade
 
-O símbolo não é uma marca oficial de ChatGPT, Gemini, OpenAI ou Google.
+O ícone oficial do **Chat Maestro** é uma versão otimizada **diretamente da arte conceitual aprovada**: balão/maestro, gravata-borboleta, batuta branca, movimento curvo em vermelho-bordô e estrela. Não é um SVG redesenhado por aproximação.
 
-## Arquivos oficiais
+A fonte versionada é `assets/brand/icon-source.png` (256 × 256 px). Os PNGs em `assets/icon16.png`, `icon32.png`, `icon48.png` e `icon128.png` são artefatos prontos para instalação. O ícone de 16 px é uma redução deliberada: detalhes finos podem se fundir, porém a silhueta e o contraste permanecem.
 
-| Caminho | Uso |
+## Arquivos e integrações
+
+| Arquivo | Uso |
 | --- | --- |
-| `assets/chat-maestro-icon.svg` | SVG-fonte, ícone do cabeçalho |
-| `assets/chat-maestro-wordmark.svg` | Assinatura horizontal em material e documentação |
-| `assets/icon16.png` | Barra de ferramentas |
-| `assets/icon32.png` | Interface de extensões |
+| `assets/brand/icon-source.png` | Fonte raster canônica para evolução dos ícones |
+| `assets/icon16.png` | Barra de ferramentas / ação Chrome |
+| `assets/icon32.png` | Interface / ação Chrome e favicon do painel |
 | `assets/icon48.png` | Gerenciador de extensões |
-| `assets/icon128.png` | Distribuição Chrome MV3 |
+| `assets/icon128.png` | Manifest V3, painel lateral e README |
 
-A arte vetorial é uma **reconstrução técnica fiel ao conceito aprovado**, não um arquivo-fonte extraído da arte de apresentação. Edite o SVG e regenere os PNGs, em vez de editar cada resolução separadamente.
+O `manifest.json` declara tanto `icons` quanto `action.default_icon`. O painel carrega `icon128.png`. O script `scripts/assets.mjs` distribui apenas os arquivos necessários no `dist/`.
 
-## Paleta
+## Regenerar
 
-- Grafite profundo: `#13101C`
-- Bordô: `#CF123E`
-- Branco: `#FFFFFF`
-- Texto bordô da assinatura: `#C9143F`
-
-## Atualização dos ícones
-
-A geração de PNG é opcional e ocorre fora do build principal: a extensão não depende de biblioteca gráfica de runtime.
+O projeto não depende de bibliotecas gráficas no runtime. Para regenerar os PNGs somente se a fonte for alterada:
 
 ```bash
-python -m pip install "CairoSVG>=2.8,<3" "Pillow>=11,<13"
+python -m pip install "Pillow>=11,<13"
 python scripts/generate-icons.py
-npm test
 npm run package
 ```
 
-O gerador usa o SVG-fonte e grava todos os tamanhos do manifesto. O teste `tests/brand.test.mjs` confere presença, assinatura PNG e dimensões. Inspecione o resultado em Chrome real antes da publicação.
+O SVG anterior foi retirado intencionalmente porque divergia da identidade aprovada. Não o reutilize, mesmo que pareça mais conveniente trabalhar com vetor.
 
-## Regras de aplicação
+## Critérios de aceitação
 
-- Preservar a batuta e o movimento de regência; não transformar a marca num mascote genérico de IA.
-- Não reduzir a imagem de apresentação inteira para servir de ícone.
-- Não usar bitmap para substituir o texto da UI.
-- Não adicionar efeitos que reduzam contraste em 16 px.
-- Não ampliar permissões MV3 por motivos de identidade visual.
+- Verificar tamanhos e integridade PNG automaticamente (`tests/brand.test.mjs`).
+- Usar imagens locais empacotadas e não links de terceiros.
+- Sem permissões adicionais, código remoto ou recursos de marca externos.
+- Revisar visualmente os ícones em 16/32/48/128 px em Chrome real, em temas claro e escuro.
+- Imagens ilustrativas não devem ser descritas como capturas reais da extensão.
+- A marca não é associada oficialmente a OpenAI ou Google.
+
+> A fonte original em alta resolução da arte conceitual permanece no histórico de criação; o arquivo versionado de 256 px é a referência operacional do projeto.

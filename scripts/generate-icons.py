@@ -1,24 +1,25 @@
 #!/usr/bin/env python3
-"""Regera os PNGs a partir do SVG. Requer CairoSVG e Pillow apenas para edição."""
-from io import BytesIO
+"""Regenera somente os ícones de distribuição a partir do PNG aprovado.
+
+Dependência OPCIONAL de desenvolvimento: python -m pip install "Pillow>=11,<13"
+O pacote de extensão nunca precisa de Python/Pillow em runtime.
+"""
 from pathlib import Path
-import cairosvg
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
-SOURCE = ROOT / "assets" / "chat-maestro-icon.svg"
+SOURCE = ROOT / "assets" / "brand" / "icon-source.png"
 SIZES = (16, 32, 48, 128)
 
 def main() -> None:
-    svg = SOURCE.read_bytes()
+    source = Image.open(SOURCE).convert("RGBA")
+    assert source.size == (256, 256), "Fonte de marca deve ter 256 × 256 px"
     for size in SIZES:
-        png = cairosvg.svg2png(bytestring=svg, output_width=size * 4, output_height=size * 4)
-        image = Image.open(BytesIO(png)).convert("RGB")
-        image = image.resize((size, size), Image.Resampling.LANCZOS)
-        image = image.quantize(colors=16, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
-        target = ROOT / "assets" / f"icon{size}.png"
-        image.save(target, optimize=True)
-        print(f"{target.relative_to(ROOT)}: {size}x{size}")
+        image = source.resize((size, size), Image.Resampling.LANCZOS)
+        image = image.quantize(colors=64, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE)
+        path = ROOT / "assets" / f"icon{size}.png"
+        image.save(path, optimize=True)
+        print(f"{path.relative_to(ROOT)}: {size}×{size}")
 
 if __name__ == "__main__":
     main()

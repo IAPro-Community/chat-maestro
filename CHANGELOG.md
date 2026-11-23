@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.3 — Marca fiel ao conceito aprovado (2026-11-22)
+
+- Substituídos os ícones vetoriais interpretativos por PNGs derivados diretamente da arte aprovada do Chat Maestro.
+- Fonte raster 256 px versionada, gerador simplificado e verificação de identidade para os quatro tamanhos MV3.
+- Cabeçalho do painel, favicon, README e ícone explícito da ação do Chrome apontam para a mesma família visual.
+- CI passa a validar também o empacotamento ZIP da extensão; removido um listener de teclado duplicado.
+- Permissões, ID da extensão, IndexedDB e comportamento de chats/filas preservados.
+- Publicação na Web Store e homologação visual no Chrome real ainda pendentes.
+
 ## 0.3.2 — Novo ícone da extensão (2026-11-22)
 
 - Ícones Chrome 16/32/48/128 px regenerados a partir da identidade vetorial oficial com maestro e batuta.

@@ -17,3 +17,8 @@ Extensão independente de Chrome para ChatGPT e Gemini. Mantenha produto leve e 
 - Toda operação sobre a página deve validar URL canônica, ID da conversa e provedor antes e dentro do script de execução.
 - Não sobrescrever rascunhos nem marcar itens como enviados sem confirmação explícita.
 - Manter compatibilidade dos backups v1/v2 e versionar mudanças de schema com migrações testadas.
+
+## Identidade visual (v0.3.3)
+- Fonte oficial: `assets/brand/icon-source.png`, derivada da arte aprovada. Não reconstruir a partir do SVG antigo.
+- Após mexer na marca, regenerar PNGs com `scripts/generate-icons.py`, validar os quatro tamanhos, e revisar ícone e painel no navegador.
+- Não aumentar permissões ou dependências de runtime por alterações visuais.

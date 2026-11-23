@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/chat-maestro-icon.svg" alt="Símbolo do Chat Maestro" width="104" height="104">
+  <img src="assets/icon128.png" alt="Ícone oficial do Chat Maestro: maestro com batuta e balão de conversa" width="104" height="104">
 </p>
 
 <h1 align="center">Chat Maestro</h1>
@@ -21,13 +21,13 @@
 </p>
 
 <p align="center">
-  <img alt="Versão 0.3.2" src="https://img.shields.io/badge/vers%C3%A3o-0.3.2-222222">
+  <img alt="Versão 0.3.3" src="https://img.shields.io/badge/vers%C3%A3o-0.3.3-222222">
   <img alt="Chrome Manifest V3" src="https://img.shields.io/badge/Chrome-Manifest%20V3-246BCE">
   <img alt="Local-first" src="https://img.shields.io/badge/dados-local--first-14866D">
   <a href="https://github.com/IAPro-Community/chat-maestro/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/IAPro-Community/chat-maestro/actions/workflows/ci.yml/badge.svg"></a>
 </p>
 
-> **Prévia para desenvolvimento · v0.3.2.** A base já inclui biblioteca, organização local e fila de mensagens. A integração visual com sessões autenticadas de ChatGPT e Gemini ainda precisa de homologação. Não há publicação na Chrome Web Store nesta fase.
+> **Prévia para desenvolvimento · v0.3.3.** A base já inclui biblioteca, organização local e fila de mensagens. A integração visual com sessões autenticadas de ChatGPT e Gemini ainda precisa de homologação. Não há publicação na Chrome Web Store nesta fase.
 
 ## O problema não é conversar com IA. É encontrar a conversa depois.
 
@@ -109,7 +109,7 @@ npm install
 npm run package
 ```
 
-Isso executa o build e os testes e gera `release/chat-maestro-v0.3.2-instalar.zip`. Para instalar:
+Isso executa o build e os testes e gera `release/chat-maestro-v0.3.3-instalar.zip`. Para instalar:
 
 1. Acesse `chrome://extensions` e ative **Modo do desenvolvedor**.
 2. Clique em **Carregar sem compactação** e selecione a pasta `dist/` gerada pelo build.
@@ -125,7 +125,7 @@ A ideia não é acrescentar dezenas de botões. É resolver melhor os poucos pro
 
 | Etapa | Entrega que buscamos | Critério para considerar pronta |
 | --- | --- | --- |
-| **Agora · Base 0.3.2** | Biblioteca, pastas, prompts, fila manual e limpeza local | Build e testes automatizados; homologação de navegador ainda aberta |
+| **Agora · Base 0.3.3** | Biblioteca, pastas, prompts, fila manual e limpeza local | Build e testes automatizados; homologação de navegador ainda aberta |
 | **Próximo · Confiabilidade** | Testes reais em ChatGPT/Gemini, isolamento por conta, melhores diagnósticos | Nenhuma ação executada na conversa ou conta errada |
 | **Depois · Histórico em escala** | Busca indexada, paginação e importação mais robusta | Milhares de conversas sem travar a interface |
 | **Em estudo · Automação assistida** | Arquivamento na conta e envio sequencial opt-in | Evidência E2E, confirmação de cada ação, pausa e recuperação segura |
@@ -134,7 +134,7 @@ O avanço é guiado por **problemas observados, testes reproduzíveis e compatib
 
 Acompanhe o [roadmap detalhado](docs/ROADMAP.md), o [histórico de versões](CHANGELOG.md) e a [pesquisa de funcionalidades](docs/PESQUISA_FUNCIONALIDADES.md).
 
-A identidade visual representa um maestro conduzindo diferentes conversas. Veja o [símbolo vetorial](assets/chat-maestro-icon.svg), a [assinatura da marca](assets/chat-maestro-wordmark.svg) e as [orientações de uso](docs/BRAND_IDENTITY.md).
+A identidade visual usa o **ícone aprovado do maestro**, com batuta e balão de conversa, nos arquivos efetivamente carregados pelo Chrome. O PNG-fonte versionado é [assets/brand/icon-source.png](assets/brand/icon-source.png), acompanhado das [regras de uso e regeneração](docs/BRAND_IDENTITY.md).
 
 ## Pequeno por escolha. Preparado para crescer.
 

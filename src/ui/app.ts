@@ -13,7 +13,7 @@ async function refresh():Promise<void>{
   try{
     const ctx:Context=await loadData(refresh);
     const top=el('header','topbar');
-    const brand=el('div','branding');const mark=el('img','brand-mark');mark.src='assets/chat-maestro-icon.svg';mark.alt='';mark.width=40;mark.height=40;mark.setAttribute('aria-hidden','true');
+    const brand=el('div','branding');const mark=el('img','brand-mark');mark.src='assets/icon128.png';mark.alt='';mark.width=40;mark.height=40;mark.setAttribute('aria-hidden','true');
     const titles=el('div');titles.append(el('strong','brand-title','Chat Maestro'),el('span','brand-subtitle','Seu espaço, sob controle.'));
     brand.append(mark,titles);top.append(brand);
     const statistics=el('div','statistics');
@@ -38,15 +38,6 @@ async function refresh():Promise<void>{
   }finally{busy=false;}
 }
 function metric(n:number,label:string):HTMLElement{const item=el('div','metric');item.append(el('strong','',String(n)),el('span','',label));return item;}
-document.addEventListener('keydown',event=>{
-  // Atalho local, restrito ao painel e sem capturar digitação em formulários.
-  if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k'){
-    if(event.target instanceof HTMLElement && (event.target.isContentEditable || ['INPUT','TEXTAREA','SELECT'].includes(event.target.tagName)))return;
-    event.preventDefault();
-    if(tab==='library')document.getElementById('iapro-search')?.focus();
-    else{tab='library';void refresh().then(()=>document.getElementById('iapro-search')?.focus());}
-  }
-});
 document.addEventListener('keydown',event=>{
   // Atalho local, restrito ao painel e sem capturar digitação em formulários.
   if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k'){
