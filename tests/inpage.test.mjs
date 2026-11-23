@@ -9,6 +9,8 @@ const gemini='https://gemini.google.com/app/abcdef987654';
 test('mensagens in-page exigem tipo, operação e texto limitado',()=>{
   assert.equal(parseInlineRequest({type:INLINE_MESSAGE,action:'favorite',href:gpt})?.action,'favorite');
   assert.equal(parseInlineRequest({type:INLINE_MESSAGE,action:'delete',href:gpt}),null);
+  assert.equal(parseInlineRequest({type:INLINE_MESSAGE,action:'move',href:gpt,folderId:'folder-123'})?.folderId,'folder-123');
+  assert.equal(parseInlineRequest({type:INLINE_MESSAGE,action:'move',href:gpt,folderId:'../evil'}),null);
   assert.equal(parseInlineRequest({type:INLINE_MESSAGE,action:'save',href:gpt,title:'x'.repeat(251)}),null);
   assert.equal(parseInlineRequest({type:'third-party',action:'save',href:gpt}),null);
 });

@@ -22,8 +22,9 @@ button{font:inherit;cursor:pointer}
 .actions button{font-size:12px;text-align:left;color:#30222e;border:1px solid #e8dfe6;border-radius:8px;background:#faf8fa;padding:9px}
 .actions button:hover{background:#faeaf0;border-color:#d8bccb}
 .actions button:disabled{opacity:.5;cursor:not-allowed}
+.actions select{width:100%;color:inherit;background:#faf8fa;border:1px solid #e8dfe6;border-radius:8px;padding:9px;font-size:12px}
 .notice{padding:9px 12px;font-size:10px;line-height:1.4;border-top:1px solid #ece7ec;color:#71646e}
-@media(prefers-color-scheme:dark){.panel{background:#221d22;border-color:#59414b;color:#fff}.top{border-color:#493743}.status,.notice{color:#d5c5cf}.actions button{background:#332931;color:#fceef5;border-color:#5a4551}.actions button:hover{background:#483241}.close{color:#ddd}}
+@media(prefers-color-scheme:dark){.panel{background:#221d22;border-color:#59414b;color:#fff}.top{border-color:#493743}.status,.notice{color:#d5c5cf}.actions button{background:#332931;color:#fceef5;border-color:#5a4551}.actions button:hover{background:#483241}.actions select{background:#332931;border-color:#5a4551}.close{color:#ddd}}
 @media(max-width:450px){:host{right:8px;bottom:84px}.launch{padding:7px 10px}}
 `;
 const launcher=document.createElement('button');launcher.className='launch';launcher.textContent='Maestro';launcher.title='Abrir ações rápidas do Chat Maestro';launcher.setAttribute('aria-expanded','false');
@@ -36,8 +37,10 @@ const status=document.createElement('div');status.className='status';status.setA
 const actions=document.createElement('div');actions.className='actions';
 const save=document.createElement('button');save.textContent='Salvar esta conversa';
 const favorite=document.createElement('button');favorite.textContent='☆ Favoritar localmente';
+const folder=document.createElement('select');folder.setAttribute('aria-label','Mover conversa para pasta local');
+folder.append(new Option('Pasta local: nenhuma',''));
 const manager=document.createElement('button');manager.textContent='Abrir biblioteca';
-actions.append(save,favorite,manager);
+actions.append(save,favorite,folder,manager);
 const notice=document.createElement('div');notice.className='notice';notice.textContent='Ações locais. Identidade da conta ainda não verificada; não arquiva nem altera o histórico do site.';
 panel.append(top,status,actions,notice);
 shadow.append(style,launcher,panel);document.documentElement.append(host);
@@ -45,35 +48,42 @@ let lastHref='';
 let sequence=0;
 const context=()=>parseConversationUrl(location.href);
 const describe=()=>{
- const ref=context();save.disabled=!ref;favorite.disabled=!ref;
+ const ref=context();save.disabled=!ref;favorite.disabled=!ref;folder.disabled=!ref;
  return ref?('Conversa detectada no '+(ref.provider==='chatgpt'?'ChatGPT':'Gemini')+'.'):('Abra uma conversa específica para salvar ou favoritar.');
 };
-async function send(action:InlineAction):Promise<InlineResult>{
+async function send(action:InlineAction,folderId?:string|null):Promise<InlineResult>{
  const title=(document.querySelector('main h1, main h2, nav [aria-current="page"]')?.textContent||document.title||'').trim().slice(0,250);
- return chrome.runtime.sendMessage<InlineResult>({type:INLINE_MESSAGE,action,href:location.href,title});
+ return chrome.runtime.sendMessage<InlineResult>({type:INLINE_MESSAGE,action,href:location.href,title,...(action==='move'?{folderId:folderId??null}:{})});
 }
 async function update():Promise<void>{
  const generation=++sequence;status.textContent=describe();
  const ref=context();if(!ref)return;
  try{
  const response=await send('status');if(generation!==sequence)return;
- if(response.ok){favorite.textContent=response.pinned?'★ Desfavoritar localmente':'☆ Favoritar localmente';status.textContent='Conversa identificada · '+(response.saved?'salva na biblioteca':'ainda não salva');}
+ if(response.ok){
+   favorite.textContent=response.pinned?'★ Desfavoritar localmente':'☆ Favoritar localmente';
+   folder.replaceChildren(new Option('Pasta local: nenhuma',''));
+   for(const f of response.folders??[])folder.append(new Option(f.name,f.id));
+   folder.value=response.folderId??'';
+   status.textContent='Conversa identificada · '+(response.saved?'salva na biblioteca':'ainda não salva');
+ }
  else status.textContent=response.error||'Não foi possível consultar a biblioteca.';
  }catch{if(generation===sequence)status.textContent='Conexão com a extensão indisponível. Recarregue a página.';}
 }
-async function run(action:InlineAction):Promise<void>{
+async function run(action:InlineAction,folderId?:string|null):Promise<void>{
  status.textContent='Executando…';
  try{
- const response=await send(action);
+ const response=await send(action,folderId);
  if(!response.ok){status.textContent=response.error||'Operação não concluída.';return;}
  if(action==='manager'){panel.classList.remove('open');return;}
- await update();status.textContent=action==='save'?'Conversa salva localmente.':action==='favorite'?'Favorito local atualizado.':'Pronto';
+ await update();status.textContent=action==='save'?'Conversa salva localmente.':action==='favorite'?'Favorito local atualizado.':action==='move'?'Pasta local atualizada.':'Pronto';
  }catch(e){status.textContent=e instanceof Error?e.message:'Falha ao comunicar com a extensão.';}
 }
 launcher.addEventListener('click',()=>{const open=!panel.classList.contains('open');panel.classList.toggle('open',open);launcher.setAttribute('aria-expanded',String(open));if(open)void update();});
 close.addEventListener('click',()=>{panel.classList.remove('open');launcher.setAttribute('aria-expanded','false');});
 save.addEventListener('click',()=>{void run('save');});
 favorite.addEventListener('click',()=>{void run('favorite');});
+folder.addEventListener('change',()=>{void run('move',folder.value||null);});
 manager.addEventListener('click',()=>{void run('manager');});
 function sync(){
  if(!host.isConnected)document.documentElement.append(host);

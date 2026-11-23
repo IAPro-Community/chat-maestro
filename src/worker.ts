@@ -44,12 +44,17 @@ chrome.runtime.onMessage.addListener((raw,sender,reply)=>{
     }
     if(!ref)return {ok:false,accountVerified:false,error:'Abra uma conversa identificável para usar esta ação.'};
     const existing=await one<Chat>('chats',ref.id);
-    if(request.action==='status')return {ok:true,accountVerified:false,provider:ref.provider,conversation:ref.id,saved:!!existing,pinned:!!existing?.pinned};
-    if(request.action==='save' || request.action==='favorite'){
+    if(request.action==='status'){
+      const folders=(await all<Folder>('folders')).slice(0,200).map(f=>({id:f.id,name:f.name}));
+      return {ok:true,accountVerified:false,provider:ref.provider,conversation:ref.id,saved:!!existing,pinned:!!existing?.pinned,folderId:existing?.folderId??null,folders};
+    }
+    if(request.action==='save' || request.action==='favorite' || request.action==='move'){
+      if(request.action==='move' && request.folderId && !(await one<Folder>('folders',request.folderId)))return {ok:false,accountVerified:false,error:'A pasta selecionada não existe mais. Abra o gerenciador e atualize.'};
       if(!existing)await importChats([parseManualConversation(ref.url,request.title?.trim()||'Conversa sem título')]);
       if(request.action==='favorite')await modifyChat(ref.id,{pinned:!existing?.pinned});
+      if(request.action==='move')await modifyChat(ref.id,{folderId:request.folderId??null});
       const chat=await one<Chat>('chats',ref.id);
-      return {ok:true,accountVerified:false,provider:ref.provider,conversation:ref.id,saved:!!chat,pinned:!!chat?.pinned};
+      return {ok:true,accountVerified:false,provider:ref.provider,conversation:ref.id,saved:!!chat,pinned:!!chat?.pinned,folderId:chat?.folderId??null};
     }
     return {ok:false,accountVerified:false,error:'Comando desconhecido'};
   })().then(reply).catch(error=>reply({ok:false,accountVerified:false,error:error instanceof Error?error.message:'Falha interna da extensão'}));
