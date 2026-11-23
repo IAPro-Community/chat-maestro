@@ -69,3 +69,7 @@ O estado `accountVerified:false` é intencional. **Não** usamos rótulos de usu
 - https://github.com/nbslabs/tracely
 - https://github.com/jayakeshav/Gemini-Folder-Extenstion
 - https://github.com/benedyktdryl/gpt-organizer
+
+## Revisão de segurança v0.5.1
+
+Uma validação feita somente no recebimento da mensagem pode usar contexto antigo após esperas no IndexedDB. Antes de alterar um chat, o worker usa `chrome.tabs.get(tabId)` para verificar novamente URL, conversa e aba ativa e confirma a permissão de domínio. O comando falha sem gravar se o contexto mudou **antes** dessa verificação. Essa verificação é best-effort: não existe uma transação atômica que una a navegação no Chrome e a gravação no IndexedDB; por isso ações remotas seguem desabilitadas até homologação e isolamento por conta.

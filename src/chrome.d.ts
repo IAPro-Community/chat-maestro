@@ -25,6 +25,7 @@ interface ChromeApi {
     }
   };
   tabs: {
+    get: (tabId: number) => Promise<ChromeTab>;
     query: (criteria: {active: boolean; currentWindow?: boolean; lastFocusedWindow?: boolean}) => Promise<ChromeTab[]>;
     create: (options: {url: string; active?: boolean}) => Promise<ChromeTab>;
   };

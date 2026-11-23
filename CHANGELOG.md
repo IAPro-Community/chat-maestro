@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.1 — Validação adicional do destino (2026-11-23)
+
+- Revalida a aba ativa e a URL imediatamente antes de salvar, favoritar ou mover após operações assíncronas; também reconfirma a permissão vigente.
+- Rejeita alterações se o usuário mudou de conversa, aba ou provedor durante o processamento; testes cobrindo cenários de concorrência.
+- Limitação: é um controle best-effort, não uma transação atômica entre navegação do Chrome e IndexedDB. Identificação de conta e E2E autenticado continuam pendentes.
+
+
 ## 0.5.0 — Primeira integração contextual (2026-11-23)
 
 - Adicionado botão Maestro diretamente nas páginas autorizadas de ChatGPT e Gemini: salvar, favoritar e mover conversas para pastas **locais**, abrir gerenciador.
