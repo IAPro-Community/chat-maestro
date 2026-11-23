@@ -1,6 +1,7 @@
 import {INLINE_MESSAGE,type InlineAction,type InlineResult} from '../domain/inpage-contract.js';
 import {parseConversationUrl} from '../domain/providers.js';
 import {resolvePageAdapter} from './adapters.js';
+import {enhanceVisibleSidebar} from './sidebar.js';
 
 const ROOT_ID='chat-maestro-inline-v1';
 const adapter=resolvePageAdapter(location.href);
@@ -115,6 +116,17 @@ mark.addEventListener('click',()=>{
 manager.addEventListener('click',()=>{void run('manager');});
 function sync(){
  if(!host.isConnected)document.documentElement.append(host);
+ enhanceVisibleSidebar(document,(href,title)=>{
+   if(!profilePicker.value){
+     panel.classList.add('open');launcher.setAttribute('aria-expanded','true');
+     status.textContent='Selecione o perfil local no Maestro antes de salvar uma conversa da barra lateral.';
+     void refreshProfiles();return;
+   }
+   if(!window.confirm('Salvar esta referência em '+(profilePicker.selectedOptions[0]?.textContent??'perfil selecionado')+'?\n'+title))return;
+   void chrome.runtime.sendMessage<InlineResult>({type:INLINE_MESSAGE,action:'saveVisible',href,title,profileId:profilePicker.value})
+     .then(response=>{status.textContent=response.ok?'Conversa adicionada localmente.':response.error??'Falha ao salvar referência.';})
+     .catch(()=>{status.textContent='Não foi possível salvar a referência.';});
+ });
  if(lastHref!==location.href){lastHref=location.href;profilePicker.value='';folder.replaceChildren(new Option('Pasta local: nenhuma',''));void update();}
 }
 let timer:number|undefined;
@@ -124,5 +136,5 @@ const observer=new MutationObserver(()=>{
 });
 observer.observe(document.documentElement,{subtree:true,childList:true});
 window.addEventListener('popstate',sync);window.addEventListener('hashchange',sync);
-lastHref=location.href;void refreshProfiles();
+lastHref=location.href;sync();void refreshProfiles();
 }

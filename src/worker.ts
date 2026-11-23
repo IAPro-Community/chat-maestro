@@ -1,4 +1,4 @@
-import {parseInlineRequest,validateInlineContext,type InlineResult} from './domain/inpage-contract.js';
+import {parseInlineRequest,validateInlineContext,validateVisibleLink,type InlineResult} from './domain/inpage-contract.js';
 import {parseManualConversation} from './domain/importer.js';
 import {one,modifyChat,importChats} from './platform/db.js';
 import {hasSiteAccess} from './platform/site-access.js';
@@ -37,6 +37,17 @@ chrome.runtime.onMessage.addListener((raw,sender,reply)=>{
   if(!request)return false;
   void (async():Promise<InlineResult>=>{
     if(sender.frameId!==0||!sender.tab?.id||!sender.url||!sender.tab.url)return {ok:false,accountVerified:false,error:'Origem de mensagem inválida.'};
+    if(request.action==='saveVisible'){
+      const ref=validateVisibleLink(sender.url,sender.tab.url,request.href);
+      if(!ref)return {ok:false,accountVerified:false,error:'Link fora do domínio autorizado.'};
+      const profile=await requireProfile(request.profileId??'',ref.provider);
+      const live=await chrome.tabs.get(sender.tab.id);
+      if(!live.active||!live.url||!validateVisibleLink(sender.url,live.url,request.href))return {ok:false,accountVerified:false,error:'Aba alterada. Nenhuma operação local realizada.'};
+      if(!await hasSiteAccess(ref.provider))return {ok:false,accountVerified:false,error:'Permissão revogada.'};
+      const record=parseManualConversation(ref.url,request.title?.trim()||'Conversa da barra lateral');
+      await importChats([{...record,source:'sidebar'}],undefined,profile.id);
+      return {ok:true,accountVerified:false,provider:ref.provider,conversation:ref.id,saved:true};
+    }
     const ctx=validateInlineContext(sender.url,sender.tab.url,request.href);
     if(!ctx)return {ok:false,accountVerified:false,error:'A aba ou conversa mudou. Atualize e tente novamente.'};
     if(!await hasSiteAccess(ctx.provider))return {ok:false,accountVerified:false,error:'Permissão revogada. Reative o provedor na Biblioteca.'};
