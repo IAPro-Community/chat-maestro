@@ -102,10 +102,10 @@ flowchart LR
 
 **[Guia completo de instalação e atualização](docs/INSTALACAO.md)** · **[Baixar pacote da CI](https://github.com/IAPro-Community/chat-maestro/actions/workflows/ci.yml)**
 
-1. Abra a **CI**, escolha a execução mais recente da `main` com **Success** e baixe o artefato `chat-maestro-unpacked-package`.
-2. Extraia o ZIP baixado e, em seguida, o arquivo interno `chat-maestro-vX.Y.Z-instalar.zip` para uma **pasta fixa**.
+1. Abra a **CI**, escolha a execução mais recente da `main` com **Success** e baixe o artefato `chat-maestro-instalar`.
+2. Extraia o ZIP baixado **uma única vez** para uma **pasta fixa**.
 3. Abra `chrome://extensions`, ative **Modo do desenvolvedor** e clique em **Carregar sem compactação**.
-4. Escolha a pasta que contém diretamente o `manifest.json`.
+4. Escolha a pasta extraída que contém diretamente o `manifest.json`.
 5. Fixe o ícone da extensão e clique nele para abrir o painel lateral.
 
 > **Não use o ZIP de “Code → Download ZIP” como instalador:** ele contém o código-fonte, não a extensão compilada. Não instale um segundo ID sem antes fazer backup dos dados da instalação anterior.
