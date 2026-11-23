@@ -1,6 +1,6 @@
 import type {Chat,Folder} from '../../domain/types.js';
 import {folderTree} from '../../domain/folders.js';
-import {modifyChat,modifyChats,remove} from '../../platform/db.js';
+import {modifyChat,modifyChats,remove,searchIndexed} from '../../platform/db.js';
 import {PROVIDER_LABEL,type AIProvider} from '../../domain/providers.js';
 import {serializeChats,type ExportFormat} from '../../domain/exporter.js';
 import {el,action,empty,formatDate,safeOpen,confirmAction,notify,downloadText} from '../dom.js';
@@ -107,9 +107,12 @@ export function renderLibrary(ctx:Context):HTMLElement{
   const filters=el('div','filter-tabs');const result=el('div','chat-list');
   const selected=new Set<string>();
   let visibleRows:Chat[]=[];
+  let indexedRows:Chat[]|null=null;
+  let indexedTotal=0;
+  let latestSearch=0;
   const bulk=el('div','panel bulk-panel');const selectedCount=el('p','hint');
   const bulkActions=el('div','buttons');bulk.append(selectedCount,bulkActions);
-  const getSelected=():Chat[]=>ctx.chats.filter(c=>selected.has(c.id));
+  const getSelected=():Chat[]=>(indexedRows??ctx.chats).filter(c=>selected.has(c.id));
   const updateSelection=()=>{bulk.hidden=selected.size===0;selectedCount.textContent=`${selected.size} selecionada(s) · limite de 100 por lote`;for(const b of bulkActions.querySelectorAll('button'))b.disabled=selected.size===0 || selected.size>100;};
   async function applyBulk(patch:Parameters<typeof modifyChats>[1],label:string):Promise<void>{
     const ids=[...selected];if(!ids.length)throw Error('Selecione conversas.');
@@ -130,26 +133,40 @@ export function renderLibrary(ctx:Context):HTMLElement{
   }
   const renderList=()=>{
     const q=normalize(query);
-    const rows=ctx.chats.filter(c=>{
+    const rows=(indexedRows??ctx.chats).filter(c=>{
       if(filter==='active'&&c.archived)return false;
       if(filter==='pinned'&&!c.pinned)return false;
       if(filter==='archived'&&!c.archived)return false;
       if(providerFilter!=='all'&&(c.provider??'chatgpt')!==providerFilter)return false;
       if(folderFilter==='none'&&c.folderId!==null)return false;
       if(folderFilter!=='all'&&folderFilter!=='none'&&c.folderId!==folderFilter)return false;
-      return !q||normalize(c.title).includes(q)||c.messages.some(m=>normalize(m.text).includes(q));
+      return indexedRows!==null || !q || normalize(c.title).includes(q)||c.messages.some(m=>normalize(m.text).includes(q));
     }).sort((a,b)=>(b.updatedAt??b.importedAt)-(a.updatedAt??a.importedAt));
     visibleRows=rows.slice(0,100);
     result.replaceChildren();
     if(!rows.length)result.append(empty(ctx.chats.length?'Nenhuma conversa corresponde aos filtros.':'Comece conectando ChatGPT ou Gemini acima. Abra uma conversa e clique em “Salvar conversa aberta”.'));
     else for(const c of visibleRows)result.append(card(c,ctx,selected,updateSelection));
-    if(rows.length>100)result.append(el('p','hint',`Exibindo 100 de ${rows.length} resultados. Refine a busca.`));
+    const resultTotal=indexedRows!==null?indexedTotal:rows.length;
+    if(resultTotal>100)result.append(el('p','hint',`Exibindo até 100 de ${resultTotal} resultados. Refine a busca.`));
   };
   for(const [id,name] of [['active','Ativas'],['pinned','Fixadas'],['archived','Arquivadas'],['all','Todas']] as const){
     const b=action(name,()=>{filter=id;selected.clear();updateSelection();for(const item of filters.querySelectorAll('button'))item.classList.toggle('selected',item===b);renderList();});
     b.classList.toggle('selected',filter===id);filters.append(b);
   }
-  search.addEventListener('input',()=>{query=search.value;selected.clear();renderList();updateSelection();});
+  search.addEventListener('input',()=>{
+    query=search.value;selected.clear();updateSelection();
+    const request=++latestSearch;
+    if(!query.trim()){indexedRows=null;indexedTotal=0;renderList();return;}
+    result.replaceChildren(el('p','hint','Buscando no índice local…'));
+    void searchIndexed(query,0,200).then(({results,total})=>{
+      if(request!==latestSearch)return;
+      indexedRows=results;indexedTotal=total;renderList();
+    }).catch(err=>{
+      if(request!==latestSearch)return;
+      indexedRows=[];indexedTotal=0;
+      result.replaceChildren(el('p','empty','Falha na busca indexada: '+(err instanceof Error?err.message:String(err))));
+    });
+  });
   folder.addEventListener('change',()=>{folderFilter=folder.value;selected.clear();renderList();updateSelection();});
   provider.addEventListener('change',()=>{providerFilter=provider.value as 'all'|AIProvider;selected.clear();renderList();updateSelection();});
   const pickVisible=action('Selecionar visíveis',()=>{
