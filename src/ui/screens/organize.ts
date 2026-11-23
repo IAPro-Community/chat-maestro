@@ -6,6 +6,7 @@ import {put,all,applyPlan,undoLast,deleteFolder,modifyChat} from '../../platform
 import {saveSettings,loadSettings} from '../../platform/settings.js';
 import {el,action,field,empty,buttonRow,notify,confirmAction,downloadText} from '../dom.js';
 import {serializeChats} from '../../domain/exporter.js';
+import {activeScope,LEGACY_SCOPE} from '../../platform/profiles.js';
 export function renderOrganize(ctx:Context):HTMLElement{
   const root=el('section','screen');root.append(el('h2','screen-title','Organização inteligente'));
   root.append(el('p','hint','Organize localmente conversas do ChatGPT e Gemini com as mesmas regras. Você revisa antes de aplicar.'));
@@ -14,11 +15,11 @@ export function renderOrganize(ctx:Context):HTMLElement{
   const days=el('input');days.type='number';days.min='30';days.max='3650';days.value=String(settings.inactivityDays);
   const recent=el('input');recent.type='number';recent.min='0';recent.max='1000';recent.value=String(settings.keepRecent);
   const protect=el('input');protect.type='checkbox';protect.checked=settings.protectFiled;
-  const auto=el('input');auto.type='checkbox';auto.checked=settings.autoRun;
+  const auto=el('input');auto.type='checkbox';auto.checked=settings.autoRun;auto.disabled=activeScope()!==LEGACY_SCOPE;
   policy.append(field('Arquivar após dias sem atividade',days),field('Preservar as mais recentes',recent));
   const row1=el('label','checkrow');row1.append(protect,el('span','','Proteger conversas já organizadas em pastas'));policy.append(row1);
   const row2=el('label','checkrow');row2.append(auto,el('span','','Executar organização local diariamente'));policy.append(row2);
-  policy.append(el('p','hint','Datas de captura da barra lateral não comprovam inatividade; essas conversas nunca são arquivadas automaticamente.'));
+  policy.append(el('p','hint','Datas de captura da barra lateral não comprovam inatividade. A rotina diária fica desativada em perfis isolados até homologação; a organização manual continua disponível.'));
   policy.append(action('Salvar política',async()=>{
     const updated:Settings={...settings,inactivityDays:Number(days.value),keepRecent:Number(recent.value),protectFiled:protect.checked,autoRun:auto.checked};
     await saveSettings(updated);notify('Política salva.');await ctx.refresh();

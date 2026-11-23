@@ -1,12 +1,13 @@
 import {parseConversationUrl} from '../domain/providers.js';
 import {getActiveAiTab,captureAccessError} from './site-access.js';
+import {requireSelectedProfile} from './profiles.js';
 /** Somente insere no editor com clique explícito; nunca envia mensagens nem usa endpoints privados. */
 export async function insertIntoActiveComposer(text:string,targetConversationUrl?:string):Promise<void>{
   if(!text.trim()||text.length>20000)throw Error('Prompt vazio ou muito extenso.');
   const tab=await getActiveAiTab();
   const expected=targetConversationUrl?parseConversationUrl(targetConversationUrl):null;
   if(targetConversationUrl && !expected)throw Error('Destino da fila inválido.');
-  if(expected){const active=parseConversationUrl(tab.url);if(!active || active.id!==expected.id || active.provider!==expected.provider)throw Error('A aba ativa não é a conversa de destino. Abra a conversa correta antes de preparar a fila.');}
+  if(expected){await requireSelectedProfile(expected.provider);const active=parseConversationUrl(tab.url);if(!active || active.id!==expected.id || active.provider!==expected.provider)throw Error('A aba ativa não é a conversa de destino. Abra a conversa correta antes de preparar a fila.');}
   const outcome=await chrome.scripting.executeScript<boolean>({target:{tabId:tab.id},args:[text,expected?.url??null],func:(content:string,expectedUrl:string|null)=>{
     const requireEmpty=expectedUrl!==null;
     if(expectedUrl){

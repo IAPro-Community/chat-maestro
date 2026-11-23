@@ -79,3 +79,11 @@ test('backup de outro perfil requer confirmação explícita da transferência',
   await restoreBackup(backup,true);
   assert.equal((await all('chats')).length,1);
 });
+
+test('importações não misturam provedores no mesmo banco',async()=>{
+  const p=await createProfile('chatgpt','Teste de importação segura');
+  await selectProfile(p.id);
+  const foreign=parseManualConversation('https://gemini.google.com/app/abcdefghi','Outro provedor');
+  await assert.rejects(importChats([foreign]),/outro provedor/);
+  assert.equal((await all('chats')).length,0);
+});

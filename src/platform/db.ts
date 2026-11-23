@@ -1,6 +1,6 @@
 import type {Chat, Folder, Prompt, UndoRecord, Recommendation, Plan} from '../domain/types.js';
 import type {QueuedMessage} from '../domain/queue.js';
-import {applyToChat, MAX_BATCH} from '../domain/organizer.js';
+import {applyToChat, MAX_BATCH, validSettings} from '../domain/organizer.js';
 import {mergeChat} from '../domain/importer.js';
 import {parseConversationUrl} from '../domain/providers.js';
 import {activeScope,dbNameForScope,LEGACY_SCOPE,requireProfile} from './profiles.js';
@@ -209,5 +209,11 @@ export async function copyLegacyToProfile(scopeId:string,provider:'chatgpt'|'gem
   const included=chats.filter(c=>c.provider===provider);
   const selectedQueue=queue.filter(q=>q.provider===provider);
   await replaceAll(included,folders,prompts,selectedQueue,scopeId);
+  // Copia regras que referenciam as pastas migradas; desliga execução diária.
+  const legacySettings=(await chrome.storage.local.get('iapro.settings.v1'))['iapro.settings.v1'];
+  if(legacySettings!==undefined){
+    const safe={...validSettings(legacySettings),autoRun:false};
+    await chrome.storage.local.set({['iapro.settings.v1.'+scopeId]:safe});
+  }
   return {chats:included.length,folders:folders.length,prompts:prompts.length,queue:selectedQueue.length};
 }
