@@ -9,7 +9,7 @@ export interface QueuedMessage {
   body: string;
   createdAt: number;
   position: number;
-  status: 'pending' | 'prepared';
+  status: 'pending' | 'prepared' | 'paused';
 }
 export const MAX_QUEUE_PER_CHAT = 30;
 export const MAX_QUEUE_TOTAL = 300;
@@ -23,7 +23,7 @@ export function normalizeQueuedMessage(value:unknown):QueuedMessage{
   if(typeof input.id!=='string' || !/^[a-zA-Z0-9-]{8,80}$/.test(input.id))throw Error('Identificador de mensagem inválido.');
   if(typeof input.body!=='string' || !input.body.trim() || input.body.length>MAX_MESSAGE_LENGTH)throw Error('Mensagem vazia ou extensa demais.');
   if(!Number.isSafeInteger(input.createdAt) || Number(input.createdAt)<1 || !Number.isSafeInteger(input.position) || Number(input.position)<0)throw Error('Ordenação ou data inválida.');
-  if(input.status!=='pending' && input.status!=='prepared')throw Error('Estado de fila inválido.');
+  if(input.status!=='pending' && input.status!=='prepared' && input.status!=='paused')throw Error('Estado de fila inválido.');
   return {id:input.id,conversationId:ref.id,provider:ref.provider,conversationUrl:ref.url,body:input.body.trim(),createdAt:Number(input.createdAt),position:Number(input.position),status:input.status};
 }
 export function queueForConversation(items:QueuedMessage[],url:string):QueuedMessage[]{

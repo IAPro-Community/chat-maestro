@@ -54,12 +54,14 @@ export async function moveQueuedMessage(url:string,id:string,direction:'up'|'dow
     return {next:rows.map(x=>changes.get(x.id)??x),result:undefined};
   });
 }
-export function changeQueueStatus(id:string,expected:'pending'|'prepared',next:'pending'|'prepared'):Promise<void>{
+export function changeQueueStatus(id:string,expected:'pending'|'prepared'|'paused',next:'pending'|'prepared'|'paused'):Promise<void>{
   return withQueue(rows=>{
     const item=rows.find(x=>x.id===id);if(!item || item.status!==expected)throw Error('A mensagem mudou de estado; atualize a fila.');
     // Apenas o primeiro item da conversa pode ser preparado, preservando FIFO.
     const first=queueForConversation(rows,item.conversationUrl)[0];
-    if(next==='prepared' && first?.id!==id)throw Error('Confirme a primeira mensagem antes de preparar a próxima.');
+    if(next==='prepared' && (first?.id!==id||expected!=='pending'))throw Error('Retome e confirme a primeira mensagem antes de preparar a próxima.');
+    if(next==='paused' && expected!=='pending')throw Error('Somente mensagens pendentes podem ser pausadas.');
+    if(expected==='paused' && next!=='pending')throw Error('Retome a mensagem antes de preparar.');
     return {next:rows.map(x=>x.id===id?{...x,status:next}:x),result:undefined};
   });
 }

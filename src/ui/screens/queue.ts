@@ -8,7 +8,7 @@ import {el,action,field,empty,notify,confirmAction} from '../dom.js';
 /** A fila é contextual: o usuário escolhe a conversa antes de preparar qualquer envio. */
 export function renderQueue():HTMLElement{
   const root=el('section','queue-workspace');
-  root.append(el('p','hint','Organize mensagens para uma conversa específica. O Chat Maestro apenas prepara o texto; você decide quando enviar.'));
+  root.append(el('p','hint','Organize mensagens por conversa com pausa, retomada e edição. A preparação é manual; nenhum envio automático é realizado.'));
   const status=el('div','context-note');status.setAttribute('role','status');root.append(status);
   const url=el('input');url.type='url';url.placeholder='https://chatgpt.com/c/...';url.setAttribute('aria-label','URL da conversa de destino');
   const picker=el('details','disclosure subtle-disclosure');
@@ -70,7 +70,7 @@ export function renderQueue():HTMLElement{
   }
   function renderRow(item:QueuedMessage,index:number,total:number):HTMLElement{
     const row=el('article','queue-item');
-    row.append(el('strong','queue-position',`${index+1} · ${item.status==='prepared'?'Preparada, aguardando confirmação':'Pendente'}`));
+    row.append(el('strong','queue-position',`${index+1} · ${item.status==='prepared'?'Preparada, aguardando confirmação':item.status==='paused'?'Pausada':'Pendente'}`));
     row.append(el('p','queue-text',item.body));
     const buttons=el('div','buttons queue-item-actions');
     if(item.status==='prepared'){
@@ -80,6 +80,8 @@ export function renderQueue():HTMLElement{
       },'primary'));
       buttons.append(action('Retornar à fila',async()=>{await changeQueueStatus(item.id,'prepared','pending');await load();}));
     }
+    if(item.status==='pending')buttons.append(action('Pausar',async()=>{await changeQueueStatus(item.id,'pending','paused');await load();}));
+    if(item.status==='paused')buttons.append(action('Retomar',async()=>{await changeQueueStatus(item.id,'paused','pending');await load();},'primary'));
     buttons.append(action('Editar',()=>{editing=item.id;body.value=item.body;save.textContent='Salvar edição';compose.open=true;body.focus();}));
     if(index>0)buttons.append(action('Subir',async()=>{await moveQueuedMessage(item.conversationUrl,item.id,'up');await load();}));
     if(index<total-1)buttons.append(action('Descer',async()=>{await moveQueuedMessage(item.conversationUrl,item.id,'down');await load();}));
