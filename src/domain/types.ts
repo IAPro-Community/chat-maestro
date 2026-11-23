@@ -1,5 +1,6 @@
 import type {AIProvider} from './providers.js';
 import type {QueuedMessage} from './queue.js';
+import type {Bookmark,PromptChain} from './knowledge.js';
 export type ChatSource = 'import' | 'sidebar' | 'manual';
 export interface Message { role: 'user' | 'assistant'; text: string }
 export interface Chat {
@@ -46,4 +47,4 @@ export interface Plan {
   evaluatedAt: number;
 }
 export interface UndoRecord { id: string; before: {archived: boolean; folderId: string | null}; afterEditedAt: number }
-export interface Backup { kind: 'iapro-optimizer'; version: 3; exportedAt: string; localScope?: {id:string;provider:AIProvider|null;label:string}; chats: Chat[]; folders: Folder[]; prompts: Prompt[]; queue: QueuedMessage[]; settings: Settings }
+export interface Backup { kind: 'iapro-optimizer'; version: 3 | 4; exportedAt: string; localScope?: {id:string;provider:AIProvider|null;label:string}; chats: Chat[]; folders: Folder[]; prompts: Prompt[]; queue: QueuedMessage[]; bookmarks?:Bookmark[]; chains?:PromptChain[]; settings: Settings }

@@ -7,9 +7,10 @@ import {queued} from './queue-store.js';
 import {all,replaceAll} from './db.js';
 import {loadSettings,saveSettings} from './settings.js';
 import {activeScope,LEGACY_SCOPE,requireSelectedProfile,validProfileId} from './profiles.js';
+import {bookmark,chain,type Bookmark,type PromptChain} from '../domain/knowledge.js';
 function record(v:unknown):v is Record<string,unknown>{return v!==null && typeof v==='object'&&!Array.isArray(v);}
 export function parseBackup(raw:unknown):Backup{
-  if(!record(raw) || raw.kind!=='iapro-optimizer'||![1,2,3].includes(Number(raw.version))||!Array.isArray(raw.chats)||!Array.isArray(raw.folders)||!Array.isArray(raw.prompts)||typeof raw.exportedAt!=='string')throw Error('Arquivo não é um backup IAPro válido.');
+  if(!record(raw) || raw.kind!=='iapro-optimizer'||![1,2,3,4].includes(Number(raw.version))||!Array.isArray(raw.chats)||!Array.isArray(raw.folders)||!Array.isArray(raw.prompts)||typeof raw.exportedAt!=='string')throw Error('Arquivo não é um backup IAPro válido.');
   if(raw.chats.length>100_000||raw.folders.length>1000||raw.prompts.length>1000)throw Error('Backup acima dos limites permitidos.');
   const ids=new Set<string>();
   for(const item of raw.chats){
@@ -22,6 +23,13 @@ export function parseBackup(raw:unknown):Backup{
   for(const c of raw.chats){if(c.folderId!==null&&!folders.has(c.folderId as string))throw Error('Backup referencia pasta inexistente.');}
   const prompts=new Set<string>();
   for(const p of raw.prompts){if(!record(p)||typeof p.id!=='string'||prompts.has(p.id)||typeof p.name!=='string'||p.name.length>100||typeof p.content!=='string'||p.content.length>20_000||typeof p.createdAt!=='number')throw Error('Prompt inválido no backup.');prompts.add(p.id);}
+  const notesRaw=Number(raw.version)>=4?raw.bookmarks:[];
+  const chainsRaw=Number(raw.version)>=4?raw.chains:[];
+  if(!Array.isArray(notesRaw)||!Array.isArray(chainsRaw)||notesRaw.length>10000||chainsRaw.length>200)throw Error('Notas ou sequências inválidas no backup.');
+  const bookmarks=(notesRaw as Bookmark[]).map(bookmark);
+  const chains=(chainsRaw as PromptChain[]).map(chain);
+  if(bookmarks.some(b=>!raw.chats.some(c=>c.id===b.chatId&&c.provider===b.provider)))throw Error('Nota sem conversa correspondente.');
+  if(new Set(bookmarks.map(b=>b.id)).size!==bookmarks.length||new Set(chains.map(c=>c.id)).size!==chains.length)throw Error('Notas ou sequências duplicadas.');
   const settings=validSettings(raw.settings);
   let localScope:Backup['localScope'];
   if(raw.localScope!==undefined){
@@ -41,15 +49,15 @@ export function parseBackup(raw:unknown):Backup{
   if(distinct.size!==queue.length)throw Error('Backup contém mensagens duplicadas na fila.');
   const countByChat=new Map<string,number>();
   for(const item of queue){const count=(countByChat.get(item.conversationId)??0)+1;if(count>MAX_QUEUE_PER_CHAT)throw Error('Backup excede o limite de mensagens por conversa.');countByChat.set(item.conversationId,count);}
-  return {kind:'iapro-optimizer',version:3,exportedAt:raw.exportedAt,...(localScope?{localScope}:{}),chats,folders:raw.folders as Folder[],prompts:raw.prompts as Prompt[],queue,settings};
+  return {kind:'iapro-optimizer',version:4,exportedAt:raw.exportedAt,...(localScope?{localScope}:{}),chats,folders:raw.folders as Folder[],prompts:raw.prompts as Prompt[],queue,bookmarks,chains,settings};
 }
 export async function makeBackup():Promise<Backup>{
-  const [chats,folders,prompts,queue,settings]=await Promise.all([all<Chat>('chats'),all<Folder>('folders'),all<Prompt>('prompts'),queued(),loadSettings()]);
+  const [chats,folders,prompts,queue,bookmarks,chains,settings]=await Promise.all([all<Chat>('chats'),all<Folder>('folders'),all<Prompt>('prompts'),queued(),all<Bookmark>('bookmarks'),all<PromptChain>('chains'),loadSettings()]);
   const scope=activeScope();
   const profile=scope===LEGACY_SCOPE?null:await requireSelectedProfile();
-  return {kind:'iapro-optimizer',version:3,exportedAt:new Date().toISOString(),
+  return {kind:'iapro-optimizer',version:4,exportedAt:new Date().toISOString(),
     localScope:profile?{id:profile.id,provider:profile.provider,label:profile.label}:{id:LEGACY_SCOPE,provider:null,label:'Legado'},
-    chats,folders,prompts,queue,settings};
+    chats,folders,prompts,queue,bookmarks,chains,settings};
 }
 export async function restoreBackup(backup:Backup,confirmDifferentScope=false):Promise<void>{
   const b=parseBackup(backup);
@@ -60,7 +68,7 @@ export async function restoreBackup(backup:Backup,confirmDifferentScope=false):P
   if(!confirmDifferentScope && b.localScope?.id!==activeScope())throw Error('Backup de outro perfil (ou origem desconhecida). Confirme explicitamente a importação entre perfis antes de restaurar.');
   // Após restauração, automações começam SEMPRE desligadas.
   const safe:Settings={...b.settings,autoRun:false};
-  await replaceAll(b.chats,b.folders,b.prompts,b.queue);
+  await replaceAll(b.chats,b.folders,b.prompts,b.queue,activeScope(),b.bookmarks??[],b.chains??[]);
   await saveSettings(safe);
 }
 export function downloadJson(filename:string,value:unknown):void{

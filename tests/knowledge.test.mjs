@@ -1,0 +1,25 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import 'fake-indexeddb/auto';
+import {advanceChain,resetChain,chain,bookmark} from '../dist/domain/knowledge.js';
+import {replaceAll,all} from '../dist/platform/db.js';
+import {saveBookmark,bookmarksForChat} from '../dist/platform/bookmarks.js';
+import {createChain,moveChain} from '../dist/platform/chains.js';
+import {parseManualConversation} from '../dist/domain/importer.js';
+test('sequência manual só avança quando não pausada',()=>{
+ const now=Date.now();const item=chain({id:'abcdefgh',name:'Revisar',steps:['Planejar','Revisar'],cursor:0,paused:false,createdAt:now,updatedAt:now});
+ assert.equal(advanceChain(item).cursor,1);
+ assert.throws(()=>advanceChain({...item,paused:true}),/Retome/);
+ assert.equal(resetChain({...item,cursor:2}).cursor,0);
+});
+test('notas e sequências preservadas em armazenamento local',async()=>{
+ const chat=parseManualConversation('https://chatgpt.com/c/abcdefgh12345','Plano');
+ await replaceAll([chat],[],[]);
+ const mark=await saveBookmark(chat.id,'Trecho selecionado','Importante',0);
+ assert.equal((await bookmarksForChat(chat.id))[0]?.quote,'Trecho selecionado');
+ const sequence=await createChain('Passos',['Planejar','Executar']);
+ assert.equal((await moveChain(sequence.id,'advance')).cursor,1);
+ assert.equal((await all('chains')).length,1);
+ assert.equal((await all('bookmarks')).length,1);
+ assert.throws(()=>bookmark({...mark,note:'x'.repeat(4001)}),/inválido/);
+});

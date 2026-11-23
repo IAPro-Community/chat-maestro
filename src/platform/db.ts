@@ -5,15 +5,17 @@ import {mergeChat} from '../domain/importer.js';
 import {parseConversationUrl} from '../domain/providers.js';
 import {folderTree,folderDescendants} from '../domain/folders.js';
 import {indexTerms,queryTerms,intersectPostings,posting,type SearchPosting} from '../domain/search.js';
+import {bookmark,chain} from '../domain/knowledge.js';
+import type {Bookmark,PromptChain} from '../domain/knowledge.js';
 import {activeScope,dbNameForScope,LEGACY_SCOPE,requireProfile} from './profiles.js';
-type StoreName = 'chats' | 'folders' | 'prompts' | 'meta' | 'queue' | 'search';
+type StoreName = 'chats' | 'folders' | 'prompts' | 'meta' | 'queue' | 'search' | 'bookmarks' | 'chains';
 const opening=new Map<string,Promise<IDBDatabase>>();
 export function openDB(scopeId:string=activeScope()):Promise<IDBDatabase>{
   const dbName=dbNameForScope(scopeId);
   const existing=opening.get(dbName);
   if(existing)return existing;
   const task=new Promise<IDBDatabase>((resolve,reject)=>{
-    const request=indexedDB.open(dbName,4);
+    const request=indexedDB.open(dbName,5);
     request.onupgradeneeded=(ev)=>{
       const db=request.result;
       if(!db.objectStoreNames.contains('chats')){const s=db.createObjectStore('chats',{keyPath:'id'});s.createIndex('byUpdate','updatedAt');}
@@ -21,6 +23,11 @@ export function openDB(scopeId:string=activeScope()):Promise<IDBDatabase>{
       if(!db.objectStoreNames.contains('prompts')) db.createObjectStore('prompts',{keyPath:'id'});
       if(!db.objectStoreNames.contains('meta')) db.createObjectStore('meta',{keyPath:'id'});
       if(!db.objectStoreNames.contains('queue')){const q=db.createObjectStore('queue',{keyPath:'id'});q.createIndex('byConversation','conversationId');}
+      if(!db.objectStoreNames.contains('bookmarks')){
+        const notes=db.createObjectStore('bookmarks',{keyPath:'id'});
+        notes.createIndex('byChat','chatId');
+      }
+      if(!db.objectStoreNames.contains('chains'))db.createObjectStore('chains',{keyPath:'id'});
       if(!db.objectStoreNames.contains('search')){
         const search=db.createObjectStore('search',{keyPath:'id'});
         search.createIndex('byTerm','term');
@@ -70,6 +77,12 @@ export async function one<T>(name:StoreName,id:string,scopeId:string=activeScope
   const db=await openDB(scopeId);return requestValue<T|undefined>(db.transaction(name,'readonly').objectStore(name).get(id));
 }
 export async function put<T extends {id:string}>(name:StoreName,item:T):Promise<void>{
+  if(name==='bookmarks'){
+    const b=bookmark(item as unknown as Bookmark);
+    const saved=await one<Chat>('chats',b.chatId);
+    if(!saved||saved.provider!==b.provider)throw Error('Nota não pertence à conversa do perfil atual.');
+  }
+  if(name==='chains')chain(item as unknown as PromptChain);
   if(name==='chats'&&activeScope()!==LEGACY_SCOPE){
     const p=await requireProfile(activeScope());
     if((item as unknown as Chat).provider!==p.provider)throw Error('Conversa pertence a outro provedor; selecione o perfil correto.');
@@ -245,20 +258,24 @@ export async function undoLast():Promise<number>{
   await done;
   return total;
 }
-export async function replaceAll(chats:Chat[],folders:Folder[],prompts:Prompt[],queue:QueuedMessage[]=[],scopeId:string=activeScope()):Promise<void>{
+export async function replaceAll(chats:Chat[],folders:Folder[],prompts:Prompt[],queue:QueuedMessage[]=[],scopeId:string=activeScope(),bookmarks:Bookmark[]=[],chains:PromptChain[]=[]):Promise<void>{
   folderTree(folders);
+  for(const b of bookmarks){bookmark(b);if(!chats.some(c=>c.id===b.chatId&&c.provider===b.provider))throw Error('Destaque referencia conversa ausente.');}
+  for(const c of chains)chain(c);
   if(scopeId!==LEGACY_SCOPE){
     const p=await requireProfile(scopeId);
     if(chats.some(c=>c.provider!==p.provider)||queue.some(q=>q.provider!==p.provider))throw Error('Não é permitido misturar provedores no perfil local.');
   }
-  const db=await openDB(scopeId);const tx=db.transaction(['chats','folders','prompts','meta','queue','search'],'readwrite');const done=txDone(tx);
+  const db=await openDB(scopeId);const tx=db.transaction(['chats','folders','prompts','meta','queue','search','bookmarks','chains'],'readwrite');const done=txDone(tx);
   const cs=tx.objectStore('chats'),fs=tx.objectStore('folders'),ps=tx.objectStore('prompts');
-  cs.clear();fs.clear();ps.clear();tx.objectStore('meta').clear();tx.objectStore('queue').clear();tx.objectStore('search').clear();
+  cs.clear();fs.clear();ps.clear();tx.objectStore('meta').clear();tx.objectStore('queue').clear();tx.objectStore('search').clear();tx.objectStore('bookmarks').clear();tx.objectStore('chains').clear();
   const si=tx.objectStore('search');
   for(const c of chats){cs.put(c);for(const term of indexTerms(c))si.put(posting(c.id,term));}
   for(const f of folders)fs.put(f);
   for(const p of prompts)ps.put(p);
   for(const item of queue)tx.objectStore('queue').put(item);
+  for(const item of bookmarks)tx.objectStore('bookmarks').put(item);
+  for(const item of chains)tx.objectStore('chains').put(item);
   await done;
 }
 export async function clearAll():Promise<void>{await replaceAll([],[],[]);}
