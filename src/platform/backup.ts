@@ -28,7 +28,7 @@ export function parseBackup(raw:unknown):Backup{
   if(!Array.isArray(notesRaw)||!Array.isArray(chainsRaw)||notesRaw.length>10000||chainsRaw.length>200)throw Error('Notas ou sequências inválidas no backup.');
   const bookmarks=(notesRaw as Bookmark[]).map(bookmark);
   const chains=(chainsRaw as PromptChain[]).map(chain);
-  if(bookmarks.some(b=>!raw.chats.some(c=>c.id===b.chatId&&c.provider===b.provider)))throw Error('Nota sem conversa correspondente.');
+  if(bookmarks.some(b=>!(raw.chats as Chat[]).some(c=>c.id===b.chatId&&c.provider===b.provider)))throw Error('Nota sem conversa correspondente.');
   if(new Set(bookmarks.map(b=>b.id)).size!==bookmarks.length||new Set(chains.map(c=>c.id)).size!==chains.length)throw Error('Notas ou sequências duplicadas.');
   const settings=validSettings(raw.settings);
   let localScope:Backup['localScope'];
