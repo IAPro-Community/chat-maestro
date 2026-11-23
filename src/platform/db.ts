@@ -3,6 +3,7 @@ import type {QueuedMessage} from '../domain/queue.js';
 import {applyToChat, MAX_BATCH, validSettings} from '../domain/organizer.js';
 import {mergeChat} from '../domain/importer.js';
 import {parseConversationUrl} from '../domain/providers.js';
+import {folderTree,folderDescendants} from '../domain/folders.js';
 import {activeScope,dbNameForScope,LEGACY_SCOPE,requireProfile} from './profiles.js';
 type StoreName = 'chats' | 'folders' | 'prompts' | 'meta' | 'queue';
 const opening=new Map<string,Promise<IDBDatabase>>();
@@ -113,7 +114,26 @@ export async function modifyChats(ids:string[],patch:Partial<Pick<Chat,'archived
   await done;
   return count;
 }
+/** Nova pasta validada em transação única. Pastas anteriores sem parentId são raízes. */
+export async function createFolder(folder:Folder):Promise<void>{
+  const db=await openDB();
+  const tx=db.transaction('folders','readwrite');const done=txDone(tx);const store=tx.objectStore('folders');
+  let issue:Error|undefined;
+  const r=store.getAll();
+  r.onsuccess=()=>{
+    try{
+      const others=r.result as Folder[];
+      if(others.some(f=>f.id===folder.id))throw Error('Pasta já existe.');
+      if(others.length>=1000)throw Error('Limite de 1000 pastas.');
+      folderTree([...others,folder]);
+      store.add(folder);
+    }catch(e){issue=e instanceof Error?e:Error(String(e));tx.abort();}
+  };
+  try{await done;}catch(e){throw issue??e;}
+}
 export async function deleteFolder(id:string):Promise<void>{
+  const folders=await all<Folder>('folders');
+  if(folderDescendants(folders,id).size)throw Error('Remova ou mova as subpastas antes de excluir esta pasta.');
   const db=await openDB();const tx=db.transaction(['folders','chats'],'readwrite');const done=txDone(tx);
   const folderStore=tx.objectStore('folders');const chatStore=tx.objectStore('chats');
   folderStore.delete(id);
@@ -176,6 +196,7 @@ export async function undoLast():Promise<number>{
   return total;
 }
 export async function replaceAll(chats:Chat[],folders:Folder[],prompts:Prompt[],queue:QueuedMessage[]=[],scopeId:string=activeScope()):Promise<void>{
+  folderTree(folders);
   if(scopeId!==LEGACY_SCOPE){
     const p=await requireProfile(scopeId);
     if(chats.some(c=>c.provider!==p.provider)||queue.some(q=>q.provider!==p.provider))throw Error('Não é permitido misturar provedores no perfil local.');

@@ -2,7 +2,8 @@ import {PROVIDER_LABEL} from '../../domain/providers.js';
 import type {Context} from '../context.js';
 import type {Folder,Settings} from '../../domain/types.js';
 import {makePlan,normalizeRuleWords} from '../../domain/organizer.js';
-import {put,all,applyPlan,undoLast,deleteFolder,modifyChat} from '../../platform/db.js';
+import {createFolder,all,applyPlan,undoLast,deleteFolder,modifyChat} from '../../platform/db.js';
+import {folderTree} from '../../domain/folders.js';
 import {saveSettings,loadSettings} from '../../platform/settings.js';
 import {el,action,field,empty,buttonRow,notify,confirmAction,downloadText} from '../dom.js';
 import {serializeChats} from '../../domain/exporter.js';
@@ -26,9 +27,10 @@ export function renderOrganize(ctx:Context):HTMLElement{
   },'primary'));root.append(policy);
   const folders=el('div','panel');folders.append(el('h3','section-heading','Pastas'));
   const list=el('div','tag-list');
-  for(const folder of ctx.folders){
+  for(const node of folderTree(ctx.folders)){
+    const folder=node.folder;
     const item=el('span','folder-tag');const dot=el('i','color-dot');dot.style.backgroundColor=folder.color;
-    item.append(dot,el('span','',folder.name),action('×',async()=>{
+    item.append(dot,el('span','',node.path),action('×',async()=>{
       if(!confirmAction(`Excluir pasta "${folder.name}"? As conversas ficarão sem pasta.`))return;
       await deleteFolder(folder.id);
       const next={...ctx.settings,rules:ctx.settings.rules.filter(r=>r.folderId!==folder.id)};
@@ -38,9 +40,12 @@ export function renderOrganize(ctx:Context):HTMLElement{
   folders.append(list);
   const folderInput=el('input');folderInput.placeholder='Nome da nova pasta';folderInput.maxLength=80;
   const color=el('input');color.type='color';color.value='#6366f1';color.setAttribute('aria-label','Cor da pasta');
-  folders.append(buttonRow(folderInput,color,action('Criar pasta',async()=>{
+  const parent=el('select');parent.setAttribute('aria-label','Pasta-pai');
+  parent.append(new Option('Raiz (sem pasta-pai)',''));
+  for(const node of folderTree(ctx.folders))parent.append(new Option('  '.repeat(node.depth)+node.path,node.folder.id));
+  folders.append(field('Criar dentro de',parent),buttonRow(folderInput,color,action('Criar pasta',async()=>{
     const name=folderInput.value.trim();if(!name||name.length>80)throw Error('Informe o nome da pasta.');
-    const entry:Folder={id:crypto.randomUUID(),name,color:color.value};await put('folders',entry);await ctx.refresh();
+    const entry:Folder={id:crypto.randomUUID(),name,color:color.value,parentId:parent.value||null};await createFolder(entry);await ctx.refresh();
   },'primary')));root.append(folders);
   const rules=el('div','panel');rules.append(el('h3','section-heading','Regras por título'));
   rules.append(el('p','hint','Exemplo: delphi, pascal → pasta Desenvolvimento. Nenhum serviço de IA é chamado.'));

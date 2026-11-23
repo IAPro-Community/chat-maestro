@@ -18,7 +18,7 @@ export interface Chat {
   messages: Message[];
   editedAt: number;
 }
-export interface Folder { id: string; name: string; color: string }
+export interface Folder { id: string; name: string; color: string; parentId?: string | null }
 export interface Prompt { id: string; name: string; content: string; createdAt: number }
 export interface Rule { id: string; keywords: string[]; folderId: string; enabled: boolean }
 export interface Settings {

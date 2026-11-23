@@ -1,4 +1,5 @@
 import type {Chat,Folder} from '../../domain/types.js';
+import {folderTree} from '../../domain/folders.js';
 import {modifyChat,modifyChats,remove} from '../../platform/db.js';
 import {PROVIDER_LABEL,type AIProvider} from '../../domain/providers.js';
 import {serializeChats,type ExportFormat} from '../../domain/exporter.js';
@@ -12,7 +13,7 @@ let filter:Filter='active';let query='';let folderFilter='all';let providerFilte
 const normalize=(t:string)=>t.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR');
 function options(sel:HTMLSelectElement,folders:Folder[],selected:string|null){
   sel.append(new Option('Sem pasta',''));
-  for(const f of folders)sel.append(new Option(f.name,f.id));
+  for(const node of folderTree(folders))sel.append(new Option(node.path,node.folder.id));
   sel.value=selected??'';
 }
 function card(chat:Chat,ctx:Context,selected:Set<string>,onSelection:()=>void):HTMLElement{
@@ -101,7 +102,7 @@ export function renderLibrary(ctx:Context):HTMLElement{
   const toolbar=el('div','toolbar');const search=el('input','search');search.type='search';search.placeholder='Buscar título ou mensagens…';search.id='iapro-search';search.value=query;search.setAttribute('aria-label','Buscar conversas');
   toolbar.append(search);
   const folder=el('select','filter-select');folder.setAttribute('aria-label','Filtrar pasta');folder.append(new Option('Todas as pastas','all'),new Option('Sem pasta','none'));
-  for(const f of ctx.folders)folder.append(new Option(f.name,f.id));folder.value=folderFilter;toolbar.append(folder);
+  for(const node of folderTree(ctx.folders))folder.append(new Option(node.path,node.folder.id));folder.value=folderFilter;toolbar.append(folder);
   const provider=el('select','filter-select');provider.setAttribute('aria-label','Filtrar plataforma');provider.append(new Option('ChatGPT + Gemini','all'),new Option('ChatGPT','chatgpt'),new Option('Gemini','gemini'));provider.value=providerFilter;
   const filters=el('div','filter-tabs');const result=el('div','chat-list');
   const selected=new Set<string>();
@@ -174,7 +175,9 @@ export function renderLibrary(ctx:Context):HTMLElement{
   collection('Favoritas','pinned','all',ctx.chats.filter(c=>c.pinned).length);
   collection('Arquivadas','archived','all',ctx.chats.filter(c=>c.archived).length);
   rail.append(el('h3','section-heading rail-folders-title','Pastas'));
-  for(const f of ctx.folders)collection(f.name,'all',f.id,ctx.chats.filter(c=>c.folderId===f.id).length);
+  for(const node of folderTree(ctx.folders)){
+    collection('  '.repeat(node.depth)+node.folder.name,'all',node.folder.id,ctx.chats.filter(c=>c.folderId===node.folder.id).length);
+  }
   if(!ctx.folders.length)rail.append(el('p','hint','Crie pastas em Organizar.'));
   const content=el('div','library-content');
   content.append(toolbar,provider,filters,selectRow,bulk,result);

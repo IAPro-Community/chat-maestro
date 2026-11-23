@@ -1,6 +1,7 @@
 import type {Backup,Chat,Folder,Prompt,Settings} from '../domain/types.js';
 import {validSettings} from '../domain/organizer.js';
 import {parseConversationUrl} from '../domain/providers.js';
+import {folderTree} from '../domain/folders.js';
 import {normalizeQueuedMessage,MAX_QUEUE_PER_CHAT,MAX_QUEUE_TOTAL,type QueuedMessage} from '../domain/queue.js';
 import {queued} from './queue-store.js';
 import {all,replaceAll} from './db.js';
@@ -17,6 +18,7 @@ export function parseBackup(raw:unknown):Backup{
   }
   const folders=new Set<string>();
   for(const f of raw.folders){if(!record(f)||typeof f.id!=='string'||folders.has(f.id)||typeof f.name!=='string'||f.name.length>80||!/^#[0-9a-fA-F]{6}$/.test(String(f.color)))throw Error('Pasta inválida no backup.');folders.add(f.id);}
+  folderTree(raw.folders as Folder[]);
   for(const c of raw.chats){if(c.folderId!==null&&!folders.has(c.folderId as string))throw Error('Backup referencia pasta inexistente.');}
   const prompts=new Set<string>();
   for(const p of raw.prompts){if(!record(p)||typeof p.id!=='string'||prompts.has(p.id)||typeof p.name!=='string'||p.name.length>100||typeof p.content!=='string'||p.content.length>20_000||typeof p.createdAt!=='number')throw Error('Prompt inválido no backup.');prompts.add(p.id);}
