@@ -24,6 +24,7 @@ button{font:inherit;cursor:pointer}
 .actions button:hover{background:#faeaf0;border-color:#d8bccb}
 .actions button:disabled{opacity:.5;cursor:not-allowed}
 .actions select{width:100%;color:inherit;background:#faf8fa;border:1px solid #e8dfe6;border-radius:8px;padding:9px;font-size:12px}
+.actions label{font-size:11px;color:#6c555d}.actions select:disabled{opacity:.5}
 .notice{padding:9px 12px;font-size:10px;line-height:1.4;border-top:1px solid #ece7ec;color:#71646e}
 @media(prefers-color-scheme:dark){.panel{background:#221d22;border-color:#59414b;color:#fff}.top{border-color:#493743}.status,.notice{color:#d5c5cf}.actions button{background:#332931;color:#fceef5;border-color:#5a4551}.actions button:hover{background:#483241}.actions select{background:#332931;border-color:#5a4551}.close{color:#ddd}}
 @media(max-width:450px){:host{right:8px;bottom:84px}.launch{padding:7px 10px}}
@@ -36,39 +37,56 @@ const close=document.createElement('button');close.className='close';close.type=
 top.append(label,close);
 const status=document.createElement('div');status.className='status';status.setAttribute('role','status');
 const actions=document.createElement('div');actions.className='actions';
+const scopeLabel=document.createElement('label');scopeLabel.textContent='Perfil local desta conversa';
+const profilePicker=document.createElement('select');profilePicker.setAttribute('aria-label','Selecionar perfil local para esta conversa');
+profilePicker.append(new Option('Escolha o perfil em Dados…',''));
+actions.append(scopeLabel,profilePicker);
 const save=document.createElement('button');save.textContent='Salvar esta conversa';
 const favorite=document.createElement('button');favorite.textContent='☆ Favoritar localmente';
 const folder=document.createElement('select');folder.setAttribute('aria-label','Mover conversa para pasta local');
 folder.append(new Option('Pasta local: nenhuma',''));
 const manager=document.createElement('button');manager.textContent='Abrir biblioteca';
 actions.append(save,favorite,folder,manager);
-const notice=document.createElement('div');notice.className='notice';notice.textContent='Ações locais. Identidade da conta ainda não verificada; não arquiva nem altera o histórico do site.';
+const notice=document.createElement('div');notice.className='notice';notice.textContent='Escolha explicitamente um perfil local. Isso não comprova qual conta está autenticada no site. Sem arquivo remoto nem envio automático.';
 panel.append(top,status,actions,notice);
 shadow.append(style,launcher,panel);document.documentElement.append(host);
 let lastHref='';
 let sequence=0;
 const context=()=>parseConversationUrl(location.href);
 const describe=()=>{
- const ref=context();save.disabled=!ref;favorite.disabled=!ref;folder.disabled=!ref;
+ const ref=context();const enabled=!!ref && !!profilePicker.value;save.disabled=!enabled;favorite.disabled=!enabled;folder.disabled=!enabled;
  return ref?('Conversa detectada no '+(ref.provider==='chatgpt'?'ChatGPT':'Gemini')+'.'):('Abra uma conversa específica para salvar ou favoritar.');
 };
 async function send(action:InlineAction,folderId?:string|null):Promise<InlineResult>{
  const title=adapter?.title(document)||document.title.slice(0,250);
- return chrome.runtime.sendMessage<InlineResult>({type:INLINE_MESSAGE,action,href:location.href,title,...(action==='move'?{folderId:folderId??null}:{})});
+ return chrome.runtime.sendMessage<InlineResult>({type:INLINE_MESSAGE,action,href:location.href,title,...(action==='move'?{folderId:folderId??null}:{}),...(!['profiles','manager'].includes(action)?{profileId:profilePicker.value}:{})});
+}
+async function refreshProfiles():Promise<void>{
+ const result=await send('profiles');
+ if(!result.ok){status.textContent=result.error||'Não foi possível listar perfis.';return;}
+ const selected=profilePicker.value;
+ profilePicker.replaceChildren(new Option('Selecione um perfil local…',''));
+ for(const profile of result.profiles??[])profilePicker.append(new Option(profile.label,profile.id));
+ if([...profilePicker.options].some(x=>x.value===selected))profilePicker.value=selected;
+ describe();
+ if(!profilePicker.value){
+   status.textContent=(result.profiles?.length??0)?'Selecione o perfil local para continuar.':'Crie um perfil deste provedor em Dados → Perfis locais.';
+ }
 }
 async function update():Promise<void>{
- const generation=++sequence;status.textContent=describe();
- const ref=context();if(!ref)return;
+ const generation=++sequence;
+ status.textContent=describe();
+ if(!context())return;
  try{
- const response=await send('status');if(generation!==sequence)return;
- if(response.ok){
-   favorite.textContent=response.pinned?'★ Desfavoritar localmente':'☆ Favoritar localmente';
-   folder.replaceChildren(new Option('Pasta local: nenhuma',''));
-   for(const f of response.folders??[])folder.append(new Option(f.name,f.id));
-   folder.value=response.folderId??'';
-   status.textContent='Conversa identificada · '+(response.saved?'salva na biblioteca':'ainda não salva');
- }
- else status.textContent=response.error||'Não foi possível consultar a biblioteca.';
+   if(!profilePicker.value){await refreshProfiles();return;}
+   const response=await send('status');if(generation!==sequence)return;
+   if(response.ok){
+     favorite.textContent=response.pinned?'★ Desfavoritar localmente':'☆ Favoritar localmente';
+     folder.replaceChildren(new Option('Pasta local: nenhuma',''));
+     for(const f of response.folders??[])folder.append(new Option(f.name,f.id));
+     folder.value=response.folderId??'';
+     status.textContent='Perfil selecionado · '+(response.saved?'conversa salva localmente':'conversa ainda não salva');
+   }else status.textContent=response.error||'Não foi possível consultar a biblioteca.';
  }catch{if(generation===sequence)status.textContent='Conexão com a extensão indisponível. Recarregue a página.';}
 }
 async function run(action:InlineAction,folderId?:string|null):Promise<void>{
@@ -84,11 +102,12 @@ launcher.addEventListener('click',()=>{const open=!panel.classList.contains('ope
 close.addEventListener('click',()=>{panel.classList.remove('open');launcher.setAttribute('aria-expanded','false');});
 save.addEventListener('click',()=>{void run('save');});
 favorite.addEventListener('click',()=>{void run('favorite');});
+profilePicker.addEventListener('change',()=>{void update();});
 folder.addEventListener('change',()=>{void run('move',folder.value||null);});
 manager.addEventListener('click',()=>{void run('manager');});
 function sync(){
  if(!host.isConnected)document.documentElement.append(host);
- if(lastHref!==location.href){lastHref=location.href;void update();}
+ if(lastHref!==location.href){lastHref=location.href;profilePicker.value='';folder.replaceChildren(new Option('Pasta local: nenhuma',''));void update();}
 }
 let timer:number|undefined;
 const observer=new MutationObserver(()=>{
@@ -97,5 +116,5 @@ const observer=new MutationObserver(()=>{
 });
 observer.observe(document.documentElement,{subtree:true,childList:true});
 window.addEventListener('popstate',sync);window.addEventListener('hashchange',sync);
-lastHref=location.href;void update();
+lastHref=location.href;void refreshProfiles();
 }

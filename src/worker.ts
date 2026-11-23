@@ -4,6 +4,7 @@ import {one,modifyChat,importChats} from './platform/db.js';
 import {hasSiteAccess} from './platform/site-access.js';
 import {reconcileInlineScripts} from './platform/inline-registration.js';
 import {isCurrentInlineTab} from './platform/inline-guard.js';
+import {listProfiles,requireProfile} from './platform/profiles.js';
 import {loadSettings,reconcileAlarm,ALARM} from './platform/settings.js';
 import {all,applyPlan} from './platform/db.js';
 
@@ -38,25 +39,31 @@ chrome.runtime.onMessage.addListener((raw,sender,reply)=>{
     const ctx=validateInlineContext(sender.url,sender.tab.url,request.href);
     if(!ctx)return {ok:false,accountVerified:false,error:'A aba ou conversa mudou. Atualize e tente novamente.'};
     if(!await hasSiteAccess(ctx.provider))return {ok:false,accountVerified:false,error:'Permissão revogada. Reative o provedor na Biblioteca.'};
+    if(request.action==='profiles'){
+      const profiles=(await listProfiles()).filter(p=>p.provider===ctx.provider).map(p=>({id:p.id,label:p.label}));
+      return {ok:true,accountVerified:false,provider:ctx.provider,profiles};
+    }
     const ref=ctx.conversation;
     if(request.action==='manager'){
       await chrome.tabs.create({url:chrome.runtime.getURL('manager.html'),active:true});
       return {ok:true,accountVerified:false,provider:ctx.provider};
     }
     if(!ref)return {ok:false,accountVerified:false,error:'Abra uma conversa identificável para usar esta ação.'};
-    const existing=await one<Chat>('chats',ref.id);
+    const profile=await requireProfile(request.profileId??'',ctx.provider);
+    const scope=profile.id;
+    const existing=await one<Chat>('chats',ref.id,scope);
     if(request.action==='status'){
-      const folders=(await all<Folder>('folders')).slice(0,200).map(f=>({id:f.id,name:f.name}));
+      const folders=(await all<Folder>('folders',scope)).slice(0,200).map(f=>({id:f.id,name:f.name}));
       return {ok:true,accountVerified:false,provider:ref.provider,conversation:ref.id,saved:!!existing,pinned:!!existing?.pinned,folderId:existing?.folderId??null,folders};
     }
     if(request.action==='save' || request.action==='favorite' || request.action==='move'){
-      if(request.action==='move' && request.folderId && !(await one<Folder>('folders',request.folderId)))return {ok:false,accountVerified:false,error:'A pasta selecionada não existe mais. Abra o gerenciador e atualize.'};
+      if(request.action==='move' && request.folderId && !(await one<Folder>('folders',request.folderId,scope)))return {ok:false,accountVerified:false,error:'A pasta selecionada não existe mais. Abra o gerenciador e atualize.'};
       if(!await isCurrentInlineTab(sender.url,sender.tab.id,request.href))return {ok:false,accountVerified:false,error:'A aba ou conversa mudou enquanto você executava a ação. Nenhuma alteração foi aplicada.'};
       if(!await hasSiteAccess(ctx.provider))return {ok:false,accountVerified:false,error:'Permissão revogada durante a ação. Nenhuma alteração foi aplicada.'};
-      if(!existing)await importChats([parseManualConversation(ref.url,request.title?.trim()||'Conversa sem título')]);
-      if(request.action==='favorite')await modifyChat(ref.id,{pinned:!existing?.pinned});
-      if(request.action==='move')await modifyChat(ref.id,{folderId:request.folderId??null});
-      const chat=await one<Chat>('chats',ref.id);
+      if(!existing)await importChats([parseManualConversation(ref.url,request.title?.trim()||'Conversa sem título')],undefined,scope);
+      if(request.action==='favorite')await modifyChat(ref.id,{pinned:!existing?.pinned},scope);
+      if(request.action==='move')await modifyChat(ref.id,{folderId:request.folderId??null},scope);
+      const chat=await one<Chat>('chats',ref.id,scope);
       return {ok:true,accountVerified:false,provider:ref.provider,conversation:ref.id,saved:!!chat,pinned:!!chat?.pinned,folderId:chat?.folderId??null};
     }
     return {ok:false,accountVerified:false,error:'Comando desconhecido'};
