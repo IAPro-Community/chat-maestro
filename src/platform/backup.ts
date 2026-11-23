@@ -5,7 +5,7 @@ import {normalizeQueuedMessage,MAX_QUEUE_PER_CHAT,MAX_QUEUE_TOTAL,type QueuedMes
 import {queued} from './queue-store.js';
 import {all,replaceAll} from './db.js';
 import {loadSettings,saveSettings} from './settings.js';
-import {activeScope,LEGACY_SCOPE,requireSelectedProfile} from './profiles.js';
+import {activeScope,LEGACY_SCOPE,requireSelectedProfile,validProfileId} from './profiles.js';
 function record(v:unknown):v is Record<string,unknown>{return v!==null && typeof v==='object'&&!Array.isArray(v);}
 export function parseBackup(raw:unknown):Backup{
   if(!record(raw) || raw.kind!=='iapro-optimizer'||![1,2,3].includes(Number(raw.version))||!Array.isArray(raw.chats)||!Array.isArray(raw.folders)||!Array.isArray(raw.prompts)||typeof raw.exportedAt!=='string')throw Error('Arquivo não é um backup IAPro válido.');
@@ -21,6 +21,13 @@ export function parseBackup(raw:unknown):Backup{
   const prompts=new Set<string>();
   for(const p of raw.prompts){if(!record(p)||typeof p.id!=='string'||prompts.has(p.id)||typeof p.name!=='string'||p.name.length>100||typeof p.content!=='string'||p.content.length>20_000||typeof p.createdAt!=='number')throw Error('Prompt inválido no backup.');prompts.add(p.id);}
   const settings=validSettings(raw.settings);
+  let localScope:Backup['localScope'];
+  if(raw.localScope!==undefined){
+    const meta=raw.localScope;
+    if(!record(meta)||typeof meta.id!=='string'||typeof meta.label!=='string'||meta.label.length>64||
+      !(meta.id===LEGACY_SCOPE?meta.provider===null:validProfileId(meta.id)&&(meta.provider==='chatgpt'||meta.provider==='gemini')))throw Error('Origem do backup inválida.');
+    localScope={id:meta.id,provider:meta.provider as 'chatgpt'|'gemini'|null,label:meta.label};
+  }
   if(settings.rules.some(r=>!folders.has(r.folderId)))throw Error('Regras referenciam pastas ausentes.');
   // Backups v1/v2 continuam importáveis. A fila só existe em backups v3.
   const chats=(raw.chats as Chat[]).map(c=>({...c,provider:parseConversationUrl(c.url)!.provider}));
@@ -32,18 +39,23 @@ export function parseBackup(raw:unknown):Backup{
   if(distinct.size!==queue.length)throw Error('Backup contém mensagens duplicadas na fila.');
   const countByChat=new Map<string,number>();
   for(const item of queue){const count=(countByChat.get(item.conversationId)??0)+1;if(count>MAX_QUEUE_PER_CHAT)throw Error('Backup excede o limite de mensagens por conversa.');countByChat.set(item.conversationId,count);}
-  return {kind:'iapro-optimizer',version:3,exportedAt:raw.exportedAt,chats,folders:raw.folders as Folder[],prompts:raw.prompts as Prompt[],queue,settings};
+  return {kind:'iapro-optimizer',version:3,exportedAt:raw.exportedAt,...(localScope?{localScope}:{}),chats,folders:raw.folders as Folder[],prompts:raw.prompts as Prompt[],queue,settings};
 }
 export async function makeBackup():Promise<Backup>{
   const [chats,folders,prompts,queue,settings]=await Promise.all([all<Chat>('chats'),all<Folder>('folders'),all<Prompt>('prompts'),queued(),loadSettings()]);
-  return {kind:'iapro-optimizer',version:3,exportedAt:new Date().toISOString(),chats,folders,prompts,queue,settings};
+  const scope=activeScope();
+  const profile=scope===LEGACY_SCOPE?null:await requireSelectedProfile();
+  return {kind:'iapro-optimizer',version:3,exportedAt:new Date().toISOString(),
+    localScope:profile?{id:profile.id,provider:profile.provider,label:profile.label}:{id:LEGACY_SCOPE,provider:null,label:'Legado'},
+    chats,folders,prompts,queue,settings};
 }
-export async function restoreBackup(backup:Backup):Promise<void>{
+export async function restoreBackup(backup:Backup,confirmDifferentScope=false):Promise<void>{
   const b=parseBackup(backup);
   if(activeScope()!==LEGACY_SCOPE){
     const profile=await requireSelectedProfile();
     if(b.chats.some(c=>c.provider!==profile.provider)||b.queue.some(q=>q.provider!==profile.provider))throw Error('Backup contém conversas de outro provedor. Restaure primeiro em Legado e use a cópia seletiva para o perfil desejado.');
   }
+  if(!confirmDifferentScope && b.localScope?.id!==activeScope())throw Error('Backup de outro perfil (ou origem desconhecida). Confirme explicitamente a importação entre perfis antes de restaurar.');
   // Após restauração, automações começam SEMPRE desligadas.
   const safe:Settings={...b.settings,autoRun:false};
   await replaceAll(b.chats,b.folders,b.prompts,b.queue);

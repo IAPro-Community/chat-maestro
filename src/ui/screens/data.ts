@@ -105,8 +105,10 @@ export function renderData(ctx:Context):HTMLElement{
     const migration=raw && typeof raw==='object' && 'format' in raw && raw.format==='conversation-workspace-backup' ? convertLegacyBackup(raw) : null;
     const parsed=parseBackup(migration?.backup??raw);
     if(migration)notify(`Backup v0.3 convertido. ${migration.warnings.join(' ')}`);
+    const differentSource=parsed.localScope?.id!==activeScope();
+    if(differentSource && !confirmAction('ATENÇÃO: este backup veio de outro perfil local ou não declara a origem. Isso pode misturar conversas de contas diferentes. Importar mesmo assim para o perfil selecionado?'))return;
     if(!confirmAction(`No perfil ${chosen.selectedOptions[0]?.textContent??'selecionado'}, substituir os dados atuais por ${parsed.chats.length} conversas, ${parsed.folders.length} pastas, ${parsed.prompts.length} prompts e ${parsed.queue.length} mensagens na fila? A execução diária será desativada.`))return;
-    await restoreBackup(parsed);notify('Backup restaurado.');await ctx.refresh();
+    await restoreBackup(parsed,differentSource);notify('Backup restaurado no perfil selecionado.');await ctx.refresh();
   },'danger'));root.append(fold("Backup e restauração",backup));
   const danger=el('div','panel');danger.append(el('h3','section-heading','Limpar biblioteca'));
   danger.append(el('p','hint','Exclui conversas, prompts e fila apenas do perfil local selecionado. Outros perfis e Legado não são removidos. Não altera sua conta ChatGPT/Gemini. Faça backup antes.'));

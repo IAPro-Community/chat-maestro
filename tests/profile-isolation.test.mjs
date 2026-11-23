@@ -65,3 +65,17 @@ test('nunca atribui automaticamente dados antigos a um perfil',async()=>{
   assert.equal((await all('chats')).length,1);
   await assert.rejects(requireSelectedProfile(),/Crie e selecione/);
 });
+
+test('backup de outro perfil requer confirmação explícita da transferência',async()=>{
+  const from=await createProfile('chatgpt','Origem do backup');
+  const to=await createProfile('chatgpt','Destino do backup');
+  await selectProfile(from.id);
+  await importChats([parseManualConversation(url,'Original')]);
+  const backup=await makeBackup();
+  assert.equal(backup.localScope.id,from.id);
+  await selectProfile(to.id);
+  await assert.rejects(restoreBackup(backup),/Confirme explicitamente/);
+  assert.equal((await all('chats')).length,0);
+  await restoreBackup(backup,true);
+  assert.equal((await all('chats')).length,1);
+});

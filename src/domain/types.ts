@@ -46,4 +46,4 @@ export interface Plan {
   evaluatedAt: number;
 }
 export interface UndoRecord { id: string; before: {archived: boolean; folderId: string | null}; afterEditedAt: number }
-export interface Backup { kind: 'iapro-optimizer'; version: 3; exportedAt: string; chats: Chat[]; folders: Folder[]; prompts: Prompt[]; queue: QueuedMessage[]; settings: Settings }
+export interface Backup { kind: 'iapro-optimizer'; version: 3; exportedAt: string; localScope?: {id:string;provider:AIProvider|null;label:string}; chats: Chat[]; folders: Folder[]; prompts: Prompt[]; queue: QueuedMessage[]; settings: Settings }
