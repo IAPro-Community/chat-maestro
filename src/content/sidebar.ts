@@ -8,7 +8,7 @@ export function enhanceVisibleSidebar(doc:Document,click:(href:string,title:stri
   for(const anchor of doc.querySelectorAll<HTMLAnchorElement>('nav a[href],aside a[href]')){
     if(++count>400)break;
     const ref=parseConversationUrl(anchor.href);
-    if(!ref||ref.provider!==provider)continue;
+    if(!ref||ref.provider!==provider||anchor.getClientRects().length===0||anchor.closest('[aria-hidden="true"]'))continue;
     const row=anchor.parentElement;
     if(!row||row.matches('a,button'))continue;
     const existing=row.querySelector<HTMLButtonElement>(':scope > button[data-chat-maestro-action]');
