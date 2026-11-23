@@ -23,3 +23,18 @@ test('notas e sequências preservadas em armazenamento local',async()=>{
  assert.equal((await all('bookmarks')).length,1);
  assert.throws(()=>bookmark({...mark,note:'x'.repeat(4001)}),/inválido/);
 });
+
+
+test('backup v4 preserva notas e chains com validação de versão',async()=>{
+ const {makeBackup,parseBackup}=await import('../dist/platform/backup.js');
+ const chat=parseManualConversation('https://chatgpt.com/c/aaabbbcccdddeee','Conhecimento');
+ await replaceAll([chat],[],[]);
+ await saveBookmark(chat.id,'Evidência','Usar depois',0);
+ await createChain('Etapas finais',['Estudar','Executar']);
+ const backup=await makeBackup();
+ assert.equal(backup.version,4);
+ assert.equal(backup.bookmarks.length,1);
+ assert.equal(backup.chains.length,1);
+ assert.equal(parseBackup(backup).bookmarks.length,1);
+ assert.throws(()=>parseBackup({...backup,bookmarks:[{...backup.bookmarks[0],chatId:'missing'}]}),/sem conversa/);
+});
