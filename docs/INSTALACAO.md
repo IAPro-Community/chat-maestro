@@ -1,6 +1,14 @@
 # Instalar o Chat Maestro no Google Chrome
 
-> **Versão de desenvolvimento: 0.5.1.** O Chat Maestro ainda não está publicado na Chrome Web Store. A instalação é feita pelo modo de desenvolvedor, e a compatibilidade visual com sessões autenticadas de ChatGPT e Gemini ainda precisa de homologação.
+> **Versão de desenvolvimento: 0.6.0.** O Chat Maestro ainda não está publicado na Chrome Web Store. A instalação é feita pelo modo de desenvolvedor, e a compatibilidade visual com sessões autenticadas de ChatGPT e Gemini ainda precisa de homologação.
+
+## Antes de usar: perfis locais
+
+Na v0.6.0, o primeiro passo após instalar é criar um **perfil local em Dados → Perfis locais**, por exemplo "ChatGPT · Pessoal". Ele não representa um login no provedor. A Biblioteca, a fila e os backups usam o perfil selecionado.
+
+Ao abrir o botão Maestro na página, escolha também o perfil local antes de salvar ou favoritar. A seleção é reiniciada a cada mudança de conversa.
+
+Se está atualizando uma versão anterior, seus dados permanecem em **Legado**. Faça backup, crie um perfil novo vazio e use **Copiar dados legados para este perfil**. Essa operação preserva o banco original. [Guia de perfis e migração](PERFIS_LOCAIS.md).
 
 ## Opção recomendada: instalar sem programar
 
@@ -59,7 +67,7 @@ O Chrome abrirá o painel lateral do Chat Maestro. Se não abrir, consulte a se�
 ### 5. Faça o primeiro teste
 
 1. Abra uma conversa em `https://chatgpt.com` ou `https://gemini.google.com`.
-2. No painel do Chat Maestro, em **Biblioteca** clique em **ChatGPT · conectar** ou **Gemini · conectar** e aceite a autorização de acesso solicitada pelo Chrome; também existem controles em **Dados**. Depois procure o botão **Maestro** na página para salvar, favoritar ou mover a conversa para uma pasta local existente. Se não aparecer, atualize a aba e tente novamente. A opção **Salvar conversa aberta** também continua disponível na Biblioteca.
+2. No painel do Chat Maestro, em **Biblioteca** clique em **ChatGPT · conectar** ou **Gemini · conectar** e aceite a autorização de acesso solicitada pelo Chrome; também existem controles em **Dados**. Em **Dados → Perfis locais**, crie e escolha um perfil antes de qualquer nova captura; depois procure o botão **Maestro** na página, selecione esse perfil e então salve, favorite ou mova a conversa. Se não aparecer, atualize a aba e tente novamente. A opção **Salvar conversa aberta** também continua disponível na Biblioteca.
 3. Confira a nova entrada em **Biblioteca**.
 4. Teste favoritos, pastas e pesquisa antes de ativar regras de organização.
 5. Na aba **Prompts**, você pode preparar mensagens em fila, mas o **envio é manual**.

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.6.0 — Isolamento local e migração explícita (2026-11-23)
+
+- Perfis locais ChatGPT/Gemini com IndexedDB independente para conversas, pastas, prompts e filas.
+- Dados antigos preservados no Legado; cópia explícita para perfil vazio, sem excluir o banco original.
+- Ações na página exigem perfil compatível e seleção manual por conversa; importação e fila bloqueiam provedores diferentes.
+- Backups com metadados de origem, confirmação extra em restauração entre perfis e bloqueio de backups de outro provedor.
+- Organização e configurações separadas por perfil; rotina diária desativada em novos perfis até homologação.
+- Testes de IndexedDB realista simulado, migração e colisão entre perfis. Identidade autenticada e E2E no navegador permanecem pendentes.
+
+
 ## 0.5.1 — Validação adicional do destino (2026-11-23)
 
 - Revalida a aba ativa e a URL imediatamente antes de salvar, favoritar ou mover após operações assíncronas; também reconfirma a permissão vigente.

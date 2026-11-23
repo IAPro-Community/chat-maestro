@@ -1,4 +1,4 @@
-# Homologação manual v0.5.0
+# Homologação manual v0.6.0
 
 Marque cada caso antes da publicação. **Os testes automatizados não substituem estes cenários.**
 
@@ -67,3 +67,14 @@ Marque cada caso antes da publicação. **Os testes automatizados não substitue
 - [ ] Enquanto a operação estiver aguardando, alternar para outra aba: o worker deve recusar a gravação local.
 - [ ] Revogar permissão após clicar e antes de executar: verificar falha fechada e ausência de gravação.
 - [ ] Em qualquer erro, confirmar se a operação foi concluída localmente antes de repetir; evitar operações duplicadas.
+
+## P0 — Perfis locais e isolamento v0.6.0
+
+- [ ] Atualizar na mesma pasta e verificar que o Legado continua acessível sem perder dados.
+- [ ] Criar dois perfis ChatGPT e um Gemini; salvar o mesmo ID em dois perfis, com títulos/favoritos distintos.
+- [ ] Confirmar ausência de gravação in-page quando não há perfil selecionado; troca de conversa deve limpar a seleção.
+- [ ] Captura, importação e fila devem rejeitar provedor diferente do perfil ativo.
+- [ ] Copiar Legado para perfil vazio com preservação da origem; repetir cópia no mesmo destino deve falhar sem sobrescrever.
+- [ ] Backup de outro perfil: exigir segunda confirmação; backup com outro provedor: bloquear.
+- [ ] Abrir painéis/manager com diferentes perfis e validar ausência de interferência entre bancos.
+- [ ] Confirmar em Chrome e Edge reais, duas contas autenticadas, navegação SPA, permissões e ausência de mutações remotas.

@@ -73,3 +73,11 @@ O estado `accountVerified:false` é intencional. **Não** usamos rótulos de usu
 ## Revisão de segurança v0.5.1
 
 Uma validação feita somente no recebimento da mensagem pode usar contexto antigo após esperas no IndexedDB. Antes de alterar um chat, o worker usa `chrome.tabs.get(tabId)` para verificar novamente URL, conversa e aba ativa e confirma a permissão de domínio. O comando falha sem gravar se o contexto mudou **antes** dessa verificação. Essa verificação é best-effort: não existe uma transação atômica que una a navegação no Chrome e a gravação no IndexedDB; por isso ações remotas seguem desabilitadas até homologação e isolamento por conta.
+
+## v0.6.0 — Segregação por perfil local
+
+Ações in-page exigem que o usuário escolha um perfil do mesmo provedor. A extensão não deduz identidade por email, nome, DOM, cookies ou endpoints privados. Cada perfil possui um IndexedDB independente; a seleção na página é reiniciada após mudança de conversa.
+
+O worker verifica que o perfil existe e pertence ao provedor antes de utilizar o banco correspondente. Importação, captura, fila, regras e backups também respeitam a seleção no painel. Dados antigos permanecem em Legado, com cópia explícita e não destrutiva. Backups incluem metadados opcionais de origem e exigem confirmação adicional entre perfis.
+
+Isso resolve colisões de IDs **na biblioteca local**, mas não identifica automaticamente a conta autenticada. Arquivamento remoto, sync e envio automático continuam desabilitados.

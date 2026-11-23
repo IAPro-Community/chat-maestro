@@ -61,3 +61,12 @@ Não acrescentar galerias, newsletters, marketplaces, analytics, sincronização
 - Dados locais e backups v1/v2/v3 permanecem migráveis.
 - Sem ações destrutivas/remote-send sem consentimento, identificação exata da conta e confirmação do resultado.
 - Nenhum elemento visual ou README pode anunciar recurso inexistente.
+
+## Incremento entregue em v0.6.0 — isolamento local (não é autenticação)
+
+- [x] Bancos IndexedDB separados por perfil e provedor; conservação integral do Legado.
+- [x] Seleção manual obrigatória na página, com reset ao mudar de conversa.
+- [x] Importação, captura, fila e backup separados por perfil; cópia legada não destrutiva.
+- [x] Testes de colisão de ID, restauração entre perfis e exclusão de provedor incorreto.
+- [ ] **P0 aberto:** identificar/verificar com segurança a conta autenticada; perfil local não comprova isso.
+- [ ] **P0 aberto:** testar fluxo E2E com Chrome/Edge autenticado e duas contas no mesmo navegador.

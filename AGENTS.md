@@ -57,3 +57,12 @@ Extensão independente de Chrome para ChatGPT e Gemini. Mantenha produto leve e 
 - Nunca ler cookies/tokens, invocar endpoints privados, gravar histórico sem clique ou tratar captura de título como sincronização de mensagens.
 - Sem `accountScope` comprovado, proibir ações remotas, automação de limpeza/arquivo e envio de fila. A integração v0.5 é **experimental**.
 - Documentação e claims devem seguir `docs/INPAGE_MVP.md`. O gate E2E exige navegador com sessões autenticadas e prints reais.
+
+## Perfis locais — v0.6.0
+
+- Um IndexedDB por perfil local UUID e provedor; banco `iapro-optimizer-v1` é Legado, nunca autoatribuído/apagado.
+- Content scripts exigem `profileId` explícito, validado no worker junto com domínio, aba, conversa e permissão. Reset da seleção na troca de conversa.
+- Perfil local não prova identidade autenticada. Não inferir conta por texto visível, email, título, cookie ou token.
+- Todas as mutações, filas, importações e backups devem usar o perfil correto; restaurações entre perfis exigem consentimento específico.
+- Rotina diária em novos perfis fica desabilitada até homologação. Arquivamento na conta e envio automático permanecem proibidos.
+- Consulte `docs/PERFIS_LOCAIS.md` e `tests/profile-isolation.test.mjs`.
