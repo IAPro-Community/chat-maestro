@@ -5,6 +5,7 @@ import {normalizeQueuedMessage,MAX_QUEUE_PER_CHAT,MAX_QUEUE_TOTAL,type QueuedMes
 import {queued} from './queue-store.js';
 import {all,replaceAll} from './db.js';
 import {loadSettings,saveSettings} from './settings.js';
+import {activeScope,LEGACY_SCOPE,requireSelectedProfile} from './profiles.js';
 function record(v:unknown):v is Record<string,unknown>{return v!==null && typeof v==='object'&&!Array.isArray(v);}
 export function parseBackup(raw:unknown):Backup{
   if(!record(raw) || raw.kind!=='iapro-optimizer'||![1,2,3].includes(Number(raw.version))||!Array.isArray(raw.chats)||!Array.isArray(raw.folders)||!Array.isArray(raw.prompts)||typeof raw.exportedAt!=='string')throw Error('Arquivo não é um backup IAPro válido.');
@@ -39,6 +40,10 @@ export async function makeBackup():Promise<Backup>{
 }
 export async function restoreBackup(backup:Backup):Promise<void>{
   const b=parseBackup(backup);
+  if(activeScope()!==LEGACY_SCOPE){
+    const profile=await requireSelectedProfile();
+    if(b.chats.some(c=>c.provider!==profile.provider)||b.queue.some(q=>q.provider!==profile.provider))throw Error('Backup contém conversas de outro provedor. Restaure primeiro em Legado e use a cópia seletiva para o perfil desejado.');
+  }
   // Após restauração, automações começam SEMPRE desligadas.
   const safe:Settings={...b.settings,autoRun:false};
   await replaceAll(b.chats,b.folders,b.prompts,b.queue);

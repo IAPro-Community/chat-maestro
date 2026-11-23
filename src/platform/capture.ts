@@ -2,10 +2,13 @@ import {parseSidebar,parseManualConversation, type SidebarItem} from '../domain/
 import {parseConversationUrl,PROVIDER_LABEL} from '../domain/providers.js';
 import {getActiveAiTab,captureAccessError} from './site-access.js';
 import {importChats} from './db.js';
+import {requireSelectedProfile} from './profiles.js';
+import {isCurrentInlineTab} from './inline-guard.js';
 
 export async function captureCurrentSidebar():Promise<{count:number;provider:string}> {
   const tab=await getActiveAiTab();
   const provider=tab.provider;
+  await requireSelectedProfile(provider);
   const result=await chrome.scripting.executeScript<SidebarItem[]>({
     target:{tabId:tab.id},
     func:()=>{
@@ -29,12 +32,15 @@ export async function captureCurrentSidebar():Promise<{count:number;provider:str
   const rows=result[0]?.result??[];
   const validated=parseSidebar(rows).filter(r=>r.provider===provider);
   if(!validated.length)throw Error('Nenhuma conversa com link reconhecido. A estrutura da barra lateral pode ter mudado. Use “Salvar conversa aberta”.');
+  if(!await isCurrentInlineTab(tab.url,tab.id,tab.url))throw Error('A aba mudou durante a captura. Tente novamente.');
+  await requireSelectedProfile(provider);
   await importChats(validated);
   return {count:validated.length,provider:PROVIDER_LABEL[provider]};
 }
 export async function captureOpenConversation():Promise<string>{
   const tab=await getActiveAiTab();
   const ref=parseConversationUrl(tab.url);
+  await requireSelectedProfile(tab.provider);
   if(!ref)throw Error('O site está aberto, mas esta não é uma conversa identificável. Abra uma conversa específica pelo histórico do ChatGPT ou Gemini antes de salvá-la.');
   const result=await chrome.scripting.executeScript<string>({
     target:{tabId:tab.id},
@@ -44,6 +50,8 @@ export async function captureOpenConversation():Promise<string>{
       return raw.replace(/\s*[-|–]\s*(ChatGPT|Gemini).*$/i,'').slice(0,250);
     }
   }).catch(error=>{throw captureAccessError(error,ref.provider);});
+  if(!await isCurrentInlineTab(tab.url,tab.id,tab.url))throw Error('A aba mudou durante a captura. Tente novamente.');
+  await requireSelectedProfile(ref.provider);
   await importChats([parseManualConversation(ref.url,result[0]?.result||`${PROVIDER_LABEL[ref.provider]} · ${ref.nativeId}`)]);
   return PROVIDER_LABEL[ref.provider];
 }

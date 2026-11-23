@@ -6,6 +6,7 @@ import {el,action,empty,formatDate,safeOpen,confirmAction,notify,downloadText} f
 import type {Context} from '../context.js';
 import {captureOpenConversation,captureCurrentSidebar} from '../../platform/capture.js';
 import {hasSiteAccess,requestSiteAccess,activateInlineForCurrentTab} from '../../platform/site-access.js';
+import {activeScope,LEGACY_SCOPE,findProfile} from '../../platform/profiles.js';
 type Filter='active'|'all'|'pinned'|'archived';
 let filter:Filter='active';let query='';let folderFilter='all';let providerFilter:'all'|AIProvider='all';
 const normalize=(t:string)=>t.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR');
@@ -66,6 +67,13 @@ export function renderLibrary(ctx:Context):HTMLElement{
   });
   openManager.classList.add('open-manager');
   heading.append(openManager);root.append(heading);
+  const scopeNote=el('p','hint');
+  const scopeId=activeScope();
+  scopeNote.textContent=scopeId===LEGACY_SCOPE?'Espaço Legado — não associado a uma conta. Crie um perfil em Dados para novas capturas.':'Carregando perfil local…';
+  if(scopeId!==LEGACY_SCOPE)void findProfile(scopeId).then(profile=>{
+    scopeNote.textContent=profile?'Biblioteca local: '+(profile.provider==='chatgpt'?'ChatGPT':'Gemini')+' · '+profile.label+' (identidade remota não verificada)':'Perfil não encontrado; volte a Dados.';
+  }).catch(()=>{scopeNote.textContent='Não foi possível consultar o perfil local.';});
+  root.append(scopeNote);
   root.append(el('p','hint','Encontre o que importa, organize por assunto e retome qualquer conversa. Tudo na sua biblioteca local.'));
   const sources=el('div','source-connections');sources.setAttribute('aria-label','Permissões de acesso aos assistentes');
   for(const provider of ['chatgpt','gemini'] as const){
