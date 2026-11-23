@@ -50,7 +50,7 @@ test('rejeita troca de destino de mensagem enfileirada',()=>{
 });
 test('backup v3 preserva mensagens e restauração v1/v2 não inventa filas',()=>{
   const b=parseBackup(base([add(gem,'Nota de contexto')]));
-  assert.equal(b.version,3);assert.equal(b.queue[0].provider,'gemini');
+  assert.equal(b.version,4);assert.equal(b.queue[0].provider,'gemini');
   const legacy=base();delete legacy.queue;
   legacy.version=2;assert.deepEqual(parseBackup(legacy).queue,[]);
   legacy.version=1;assert.deepEqual(parseBackup(legacy).queue,[]);
