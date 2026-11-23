@@ -3,7 +3,7 @@
   "name": "Chat Maestro",
   "short_name": "Maestro",
   "description": "Organização contextual, biblioteca local, prompts e fila para ChatGPT e Gemini (prévia).",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "minimum_chrome_version": "116",
   "permissions": [
     "sidePanel",

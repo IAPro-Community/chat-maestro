@@ -6,12 +6,13 @@ import {reconcileInlineScripts} from '../dist/platform/inline-registration.js';
 
 const gpt='https://chatgpt.com/c/abcde1234567';
 const gemini='https://gemini.google.com/app/abcdef987654';
+const profileId='01234567-89ab-4def-8abc-0123456789ab';
 test('mensagens in-page exigem tipo, operação e texto limitado',()=>{
-  assert.equal(parseInlineRequest({type:INLINE_MESSAGE,action:'favorite',href:gpt})?.action,'favorite');
+  assert.equal(parseInlineRequest({type:INLINE_MESSAGE,action:'favorite',href:gpt,profileId})?.action,'favorite');
   assert.equal(parseInlineRequest({type:INLINE_MESSAGE,action:'delete',href:gpt}),null);
-  assert.equal(parseInlineRequest({type:INLINE_MESSAGE,action:'move',href:gpt,folderId:'folder-123'})?.folderId,'folder-123');
-  assert.equal(parseInlineRequest({type:INLINE_MESSAGE,action:'move',href:gpt,folderId:'../evil'}),null);
-  assert.equal(parseInlineRequest({type:INLINE_MESSAGE,action:'save',href:gpt,title:'x'.repeat(251)}),null);
+  assert.equal(parseInlineRequest({type:INLINE_MESSAGE,action:'move',href:gpt,folderId:'folder-123',profileId})?.folderId,'folder-123');
+  assert.equal(parseInlineRequest({type:INLINE_MESSAGE,action:'move',href:gpt,folderId:'../evil',profileId}),null);
+  assert.equal(parseInlineRequest({type:INLINE_MESSAGE,action:'save',href:gpt,title:'x'.repeat(251),profileId}),null);
   assert.equal(parseInlineRequest({type:'third-party',action:'save',href:gpt}),null);
 });
 test('destino é verificado simultaneamente contra URL do conteúdo e aba',()=>{
@@ -60,4 +61,12 @@ test('script contextual é bundle clássico sem imports ESM',()=>{
  const code=readFileSync('dist/content/inpage.js','utf8');
  assert.doesNotMatch(code,/(^|\n)\s*(import|export)\s/m);
  assert.match(code,/chat-maestro-inline-v1/);
+});
+
+test('comandos de gravação in-page sem perfil local são rejeitados',()=>{
+  assert.equal(parseInlineRequest({type:INLINE_MESSAGE,action:'save',href:gpt}),null);
+  assert.equal(parseInlineRequest({type:INLINE_MESSAGE,action:'status',href:gpt}),null);
+  assert.equal(parseInlineRequest({type:INLINE_MESSAGE,action:'move',href:gpt,folderId:null}),null);
+  assert.equal(parseInlineRequest({type:INLINE_MESSAGE,action:'profiles',href:gpt})?.action,'profiles');
+  assert.equal(parseInlineRequest({type:INLINE_MESSAGE,action:'manager',href:gpt})?.action,'manager');
 });
